@@ -1,0 +1,6 @@
+[submodule "papara_nt"]
+	path = papara_nt
+	url = ../papara_nt
+[submodule "ivy_mike"]
+	path = ivy_mike
+	url = git@github.com:sim82/ivy_mike.git
