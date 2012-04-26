@@ -5,6 +5,15 @@ SET(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -Wall -march=native")
 find_package(Qt4 4.4.3 REQUIRED QtCore QtGui QtXml)
 include(${QT_USE_FILE})
 
+
+IF(WIN32)
+include_directories( e:\\src\\boost_1_48_0)
+file(GLOB IM_HEADERS *.h)
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -D_SCL_SECURE_NO_WARNINGS") # as long as there is no support for std::array, these warnings are plain stupid!
+ELSE()
+
+ENDIF()
+
 include_directories(${IVYMIKE_INCLUDE} papara_nt papara_nt/ublasJama-1.0.2.3 )
 
  # with SET() command you can change variables or define new ones

@@ -1,6 +1,6 @@
 [submodule "papara_nt"]
 	path = papara_nt
-	url = ../papara_nt
+	url = git@github.com:sim82/papara_nt.git
 [submodule "ivy_mike"]
 	path = ivy_mike
 	url = git@github.com:sim82/ivy_mike.git
