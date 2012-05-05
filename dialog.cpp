@@ -221,7 +221,9 @@ Dialog::Dialog(QWidget *parent) :
     connect(ui->tv_alignment->horizontalScrollBar(), SIGNAL(valueChanged(int)), ui->tv_qs->horizontalScrollBar(), SLOT(setValue(int)));
     connect(ui->tv_qs->horizontalScrollBar(), SIGNAL(valueChanged(int)), ui->tv_alignment->horizontalScrollBar(), SLOT(setValue(int)));
    // ui->tv_alignment->setModel( &table_model_ );
-    if( false ) {
+
+#ifndef WIN32
+	if( false ) {
         tree_filename_ = "/home/sim/src_exelixis/contraption/small.tree";
         ref_filename_ = "/home/sim/src_exelixis/contraption/small.phy";
         qs_filename_ = "/home/sim/src_exelixis/contraption/small_qs.fa";
@@ -234,6 +236,11 @@ Dialog::Dialog(QWidget *parent) :
         ref_filename_ = "/space/projects/2012_robert_454/cora_Sanger_reference_alignment.phy";
         qs_filename_ = "/space/projects/2012_robert_454/cluster_52_72_cora_inversa_squamiformis_DIC_148_149.fas";
     }
+#else
+	tree_filename_ = "C:/2012_robert_454/RAxML_bestTree.cora_Sanger_reference_alignment.tre";
+	ref_filename_ = "C:/2012_robert_454/cora_Sanger_reference_alignment.phy";
+	qs_filename_ = "C:/2012_robert_454/cluster_52_72_cora_inversa_squamiformis_DIC_148_149.fas";
+#endif
 }
 
 Dialog::~Dialog()
