@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>Dialog</class>
- <widget class="QDialog" name="Dialog">
+ <class>MainWidget</class>
+ <widget class="QWidget" name="MainWidget">
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>936</width>
-    <height>656</height>
+    <width>758</width>
+    <height>576</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Dialog</string>
+   <string>Form</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
@@ -28,11 +28,14 @@
         <property name="orientation">
          <enum>Qt::Vertical</enum>
         </property>
+        <property name="opaqueResize">
+         <bool>false</bool>
+        </property>
         <widget class="QTableView" name="tv_alignment">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
            <horstretch>0</horstretch>
-           <verstretch>10</verstretch>
+           <verstretch>5</verstretch>
           </sizepolicy>
          </property>
          <property name="showGrid">
@@ -45,6 +48,12 @@
         <widget class="QTableView" name="tv_qs">
          <property name="enabled">
           <bool>true</bool>
+         </property>
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+           <horstretch>0</horstretch>
+           <verstretch>10</verstretch>
+          </sizepolicy>
          </property>
          <property name="showGrid">
           <bool>false</bool>
@@ -147,26 +156,17 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>pb_tree</tabstop>
+  <tabstop>pb_ref</tabstop>
+  <tabstop>pb_qs</tabstop>
+  <tabstop>cbRefGaps</tabstop>
+  <tabstop>pbLoad</tabstop>
+  <tabstop>pbRun</tabstop>
+  <tabstop>tv_alignment</tabstop>
+  <tabstop>tv_qs</tabstop>
+  <tabstop>pte_log</tabstop>
+ </tabstops>
  <resources/>
- <connections>
-  <connection>
-   <sender>pbLoad</sender>
-   <signal>clicked()</signal>
-   <receiver>Dialog</receiver>
-   <slot>accept()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>783</x>
-     <y>633</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>467</x>
-     <y>359</y>
-    </hint>
-   </hints>
-  </connection>
- </connections>
- <slots>
-  <slot>slot1()</slot>
- </slots>
+ <connections/>
 </ui>

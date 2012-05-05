@@ -14,7 +14,7 @@ class QProgressDialog;
 class QTableView;
 
 namespace Ui {
-    class Dialog;
+    class MainWidget;
 }
 
 namespace papara {
@@ -173,15 +173,19 @@ public:
 private:
     const output_alignment_store *oas_;
     const bool use_ref_;
+    QVariant x_;
 };
 
-class Dialog : public QDialog
+class MainWidget : public QWidget
 {
     Q_OBJECT
 
 public:
-    explicit Dialog(QWidget *parent = 0);
-    ~Dialog();
+    explicit MainWidget(QWidget *parent = 0);
+    ~MainWidget();
+
+    void post_show_stuff();
+
 public Q_SLOTS:
     void accept() {
         std::cout << "accept\n";
@@ -203,7 +207,7 @@ private Q_SLOTS:
 private:
     void resize_rows_columns( QTableView *tv, int row_size, int column_size );
     
-    Ui::Dialog *ui;
+    Ui::MainWidget *ui;
 
     QProgressDialog *progress_dialog_;
     
@@ -221,8 +225,6 @@ private:
     std::string tree_filename_;
     std::string ref_filename_;
     std::string qs_filename_;
-
-
 };
 
 #endif // DIALOG_H

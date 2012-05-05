@@ -1,7 +1,7 @@
 #include "papara.h"
 
-#include "dialog.h"
-#include "ui_dialog.h"
+#include "main_widget.h"
+#include "ui_main_widget.h"
 #include <QFileDialog>
 #include <QProgressDialog>
 #include <QThread>
@@ -208,16 +208,22 @@ private:
 
 
 
-Dialog::Dialog(QWidget *parent) :
-    QDialog(parent),
-    ui(new Ui::Dialog),
+MainWidget::MainWidget(QWidget *parent) :
+    QWidget(parent),
+    ui(new Ui::MainWidget),
     table_model_(0),
     qs_table_model_(0),
     ref_table_model_(0,true),
     progress_dialog_(0)
 {
+   
+    
     ui->setupUi(this);
 
+//     ui->pte_log->setVisible(false);
+    
+    
+    
     connect(ui->tv_alignment->horizontalScrollBar(), SIGNAL(valueChanged(int)), ui->tv_qs->horizontalScrollBar(), SLOT(setValue(int)));
     connect(ui->tv_qs->horizontalScrollBar(), SIGNAL(valueChanged(int)), ui->tv_alignment->horizontalScrollBar(), SLOT(setValue(int)));
    // ui->tv_alignment->setModel( &table_model_ );
@@ -234,11 +240,22 @@ Dialog::Dialog(QWidget *parent) :
         ref_filename_ = "/space/projects/2012_robert_454/cora_Sanger_reference_alignment.phy";
         qs_filename_ = "/space/projects/2012_robert_454/cluster_52_72_cora_inversa_squamiformis_DIC_148_149.fas";
     }
+    
+   
 }
 
-Dialog::~Dialog()
+MainWidget::~MainWidget()
 {
     delete ui;
+}
+
+void MainWidget::post_show_stuff() {
+    QList<int> old_sizes = ui->splitter->sizes();
+    assert( old_sizes.size() == 3 );
+    std::cout << "sizes: " << old_sizes[0] << " " << old_sizes[1] << " " << old_sizes[2] << "\n";
+    
+    old_sizes[2] = 0;
+    ui->splitter->setSizes(old_sizes);   
 }
 
 // converting from QString to const char* is ridiculusly complicated. so store string as when conversion is necessary std::string...
@@ -248,7 +265,7 @@ static std::string de_q_string( QString qs ) {
     return s;
 }
 
-void Dialog::on_pb_tree_clicked()
+void MainWidget::on_pb_tree_clicked()
 {
     //QFileDialog::exec
     std::cout << "tree\n";
@@ -256,14 +273,14 @@ void Dialog::on_pb_tree_clicked()
     ui->pte_log->appendPlainText(tree_filename_.c_str());
 }
 
-void Dialog::on_pb_ref_clicked()
+void MainWidget::on_pb_ref_clicked()
 {
     std::cout << "ref\n";
     ref_filename_ = de_q_string(QFileDialog::getOpenFileName(this));
     ui->pte_log->appendPlainText(ref_filename_.c_str());
 }
 
-void Dialog::on_pb_qs_clicked()
+void MainWidget::on_pb_qs_clicked()
 {
     std::cout << "qs\n";
     qs_filename_ = de_q_string(QFileDialog::getOpenFileName(this));
@@ -275,7 +292,7 @@ void Dialog::on_pb_qs_clicked()
 
 
 
-void Dialog::on_pbLoad_clicked()
+void MainWidget::on_pbLoad_clicked()
 {
     if( tree_filename_.empty() || ref_filename_.empty() || qs_filename_.empty() ) {
         ui->pte_log->appendPlainText( "file missing\n");
@@ -307,7 +324,7 @@ void Dialog::on_pbLoad_clicked()
 }
 
 
-void Dialog::on_pbRun_clicked() {
+void MainWidget::on_pbRun_clicked() {
     setEnabled(false);
    
     progress_dialog_ = new QProgressDialog( "Doing the papara", "cancel (not really)", 0, 1 );
@@ -326,7 +343,7 @@ void Dialog::on_pbRun_clicked() {
 
 }
 
-void Dialog::on_state_ready(papara_state *state) {
+void MainWidget::on_state_ready(papara_state *state) {
     if( progress_dialog_ != 0 ) {
         delete progress_dialog_;
     }
@@ -347,7 +364,7 @@ void Dialog::on_state_ready(papara_state *state) {
     ui->pte_log->appendPlainText("papara static state initialized");
 }
 
-void Dialog::resize_rows_columns( QTableView *tv, int row_size, int column_size ) {
+void MainWidget::resize_rows_columns( QTableView *tv, int row_size, int column_size ) {
     const int num_rows = tv->model()->rowCount();
     const int num_cols = tv->model()->columnCount();
     
@@ -360,7 +377,7 @@ void Dialog::resize_rows_columns( QTableView *tv, int row_size, int column_size 
     }
 }
 
-void Dialog::on_scoring_done(output_alignment_store* oa, papara::scoring_results *res) {
+void MainWidget::on_scoring_done(output_alignment_store* oa, papara::scoring_results *res) {
     if( progress_dialog_ != 0 ) {
         delete progress_dialog_;
     }
@@ -491,6 +508,7 @@ QVariant raw_alignment_table_model::data(const QModelIndex &index, int role ) co
 
          
          {
+            
              char c = (char)papara_state_->refs().seq_at(index.row()).at(index.column());
              
              
@@ -574,6 +592,8 @@ int alignment_table_model::columnCount(const QModelIndex &parent ) const {
 
 }
 
+static size_t g_count = 0;
+
 QVariant alignment_table_model::data(const QModelIndex &index, int role ) const {
     
     
@@ -581,6 +601,15 @@ QVariant alignment_table_model::data(const QModelIndex &index, int role ) const 
     if( oas_ == 0 ) {
         return QVariant();
     }
+    
+    
+    
+    
+//     ++g_count;
+//     
+//     if( g_count % 100000 == 0 ) {
+//         std::cout << "meeeeep " << g_count << "\n";
+//     }
     
     
     switch(role){
@@ -592,7 +621,8 @@ QVariant alignment_table_model::data(const QModelIndex &index, int role ) const 
         }
     case Qt::BackgroundRole:
         {
-             char c;
+
+            char c;
              
              if( use_ref_ ) {
                  c = (char)oas_->ref_at(index.row()).at(index.column());
@@ -651,7 +681,7 @@ QVariant alignment_table_model::headerData(int section, Qt::Orientation orientat
 
 }
 
-void Dialog::on_cbRefGaps_stateChanged(int s) {
+void MainWidget::on_cbRefGaps_stateChanged(int s) {
     
     if( !scoring_result_.isNull() ) {
         // TODO: make the forwarding dependent on expected time of alignment generation.

@@ -3,7 +3,7 @@
 
 #include <iostream>
 #include "papara_nt/papara.h"
-#include "dialog.h"
+#include "main_widget.h"
 
 
 namespace papara {
@@ -17,9 +17,11 @@ int main( int argc, char *argv[] ) {
 
 
     QApplication a(argc, argv);
-    Dialog w;
+    MainWidget w;
     w.show();
 
+    w.post_show_stuff();
+    
     return a.exec();
 
 }

@@ -20,18 +20,20 @@ include_directories(${IVYMIKE_INCLUDE} papara_nt papara_nt/ublasJama-1.0.2.3 )
   # here we define SAMPLE_SRCS variable that contains a list of all .cpp files
   # note that we don't need \ at the end of line
 SET( SAMPLE_SRCS
-       dialog.cpp
-
+#        dialog.cpp
+       main_widget.cpp
   )
 
   # another list, this time it includes all header files that should be treated with moc
   SET( SAMPLE_MOC_HDRS
-       dialog.h
+#        dialog.h
+       main_widget.h
   )
 
   # some .ui files
   SET( SAMPLE_UIS
-       dialog.ui
+#        dialog.ui
+       main_widget.ui
   )
 
 
@@ -48,7 +50,7 @@ INCLUDE_DIRECTORIES( ${CMAKE_BINARY_DIR} )
 
 # here we instruct CMake to build "sample" executable from all of the source files
 
-add_executable( test main.cpp dialog.cpp ${SAMPLE_MOC_SRCS} ${SAMPLE_UI_HDRS})
+add_executable( test main.cpp main_widget.cpp ${SAMPLE_MOC_SRCS} ${SAMPLE_UI_HDRS})
 
 
 target_link_libraries(test ${QT_LIBRARIES} papara_core ivymike ublas_jama )
