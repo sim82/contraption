@@ -7,6 +7,12 @@ include(${QT_USE_FILE})
 
 
 IF(WIN32)
+IF(NOT BOOST_ROOT)
+set(BOOST_ROOT C:\\src\\boost_1_47_0)
+ENDIF()
+
+include_directories( ${BOOST_ROOT} )
+
 include_directories( e:\\src\\boost_1_48_0)
 file(GLOB IM_HEADERS *.h)
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -D_SCL_SECURE_NO_WARNINGS") # as long as there is no support for std::array, these warnings are plain stupid!
