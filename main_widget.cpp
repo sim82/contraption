@@ -150,6 +150,11 @@ public:
         refs_.remove_full_gaps();
         refs_.build_ref_vecs();
         papara::lout << "done." << std::endl;
+        
+//         std::ofstream os( "queries.txt" );
+//         
+//         qs_.write( os );
+//         
     }
 
     papara::scoring_results *do_scoring_only() const {
@@ -499,8 +504,8 @@ QVariant raw_alignment_table_model::data(const QModelIndex &index, int role ) co
     if( papara_state_ != 0 ) {
     switch(role){
     case Qt::DisplayRole:
-        return QString((char)papara_state_->refs().seq_at(index.row()).at(index.column()));
-        
+        //return QString((char)papara_state_->refs().seq_at(index.row()).at(index.column()));
+        return (char)papara_state_->refs().seq_at(index.row()).at(index.column());
 //      case Qt::FontRole:
 //          if (row == 0 && col == 0) //change font only for cell(0,0)
 //          {
@@ -619,11 +624,21 @@ QVariant alignment_table_model::data(const QModelIndex &index, int role ) const 
     
     switch(role){
     case Qt::DisplayRole:
+    {
+//         return QVariant();
+        char ret;
         if( use_ref_ ) {
-            return QString((char)oas_->ref_at(index.row()).at(index.column()));
+            //ret = (char)oas_->ref_at(index.row()).at(index.column());
+            ret = (char)oas_->ref_at(index.row())[index.column()];
         } else {
-            return QString((char)oas_->qs_at(index.row()).at(index.column()));
+//             ret = (char)oas_->qs_at(index.row()).at(index.column());
+            ret = (char)oas_->qs_at(index.row())[index.column()];
         }
+        
+        char x[2] = {ret, 0};
+        return QVariant(x);
+//         return QVariant();
+    }
     case Qt::BackgroundRole:
         {
 
