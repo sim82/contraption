@@ -1,7 +1,7 @@
+cmake_minimum_required(VERSION 2.8)
 add_subdirectory(ivy_mike)
 add_subdirectory(papara_nt)
 
-SET(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -Wall -march=native")
 find_package(Qt4 4.4.3 REQUIRED QtCore QtGui QtXml)
 include(${QT_USE_FILE})
 
@@ -17,6 +17,9 @@ include_directories( e:\\src\\boost_1_48_0)
 file(GLOB IM_HEADERS *.h)
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -D_SCL_SECURE_NO_WARNINGS") # as long as there is no support for std::array, these warnings are plain stupid!
 ELSE()
+
+SET(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -Wall -march=native")
+
 
 ENDIF()
 
