@@ -22,43 +22,12 @@
      <property name="frameShadow">
       <enum>QFrame::Raised</enum>
      </property>
-     <layout class="QVBoxLayout" name="verticalLayout_2">
+     <layout class="QHBoxLayout" name="horizontalLayout">
       <item>
        <widget class="QSplitter" name="splitter">
         <property name="orientation">
          <enum>Qt::Vertical</enum>
         </property>
-        <property name="opaqueResize">
-         <bool>false</bool>
-        </property>
-        <widget class="QTableView" name="tv_alignment">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-           <horstretch>0</horstretch>
-           <verstretch>5</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="showGrid">
-          <bool>false</bool>
-         </property>
-         <attribute name="horizontalHeaderVisible">
-          <bool>false</bool>
-         </attribute>
-        </widget>
-        <widget class="QTableView" name="tv_qs">
-         <property name="enabled">
-          <bool>true</bool>
-         </property>
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-           <horstretch>0</horstretch>
-           <verstretch>10</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="showGrid">
-          <bool>false</bool>
-         </property>
-        </widget>
         <widget class="QPlainTextEdit" name="pte_log">
          <property name="enabled">
           <bool>true</bool>
@@ -82,6 +51,22 @@
           <bool>true</bool>
          </property>
         </widget>
+       </widget>
+      </item>
+      <item>
+       <widget class="QSlider" name="slZoom">
+        <property name="minimum">
+         <number>10</number>
+        </property>
+        <property name="maximum">
+         <number>100</number>
+        </property>
+        <property name="value">
+         <number>100</number>
+        </property>
+        <property name="orientation">
+         <enum>Qt::Vertical</enum>
+        </property>
        </widget>
       </item>
      </layout>
@@ -131,6 +116,9 @@
        </spacer>
       </item>
       <item>
+       <widget class="QComboBox" name="cbZoom"/>
+      </item>
+      <item>
        <widget class="QCheckBox" name="cbRefGaps">
         <property name="text">
          <string>RefGaps</string>
@@ -163,8 +151,6 @@
   <tabstop>cbRefGaps</tabstop>
   <tabstop>pbLoad</tabstop>
   <tabstop>pbRun</tabstop>
-  <tabstop>tv_alignment</tabstop>
-  <tabstop>tv_qs</tabstop>
   <tabstop>pte_log</tabstop>
  </tabstops>
  <resources/>

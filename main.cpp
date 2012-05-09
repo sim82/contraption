@@ -10,19 +10,19 @@
 #include "TextGrid.h"
 
 
-class TestModel : public TextGridModel {
-public:
-    virtual QSize size() {
-        return QSize( 2000, 2000 );
-    };
-    virtual QChar data( size_t x, size_t y ) {
-        return 'A';
-    }
-    virtual QColor color( size_t x, size_t y ) {
-        return Qt::red;
-        
-    };
-};
+// class TestModel : public TextGridModel {
+// public:
+//     virtual QSize size() {
+//         return QSize( 2000, 2000 );
+//     };
+//     virtual QChar data( size_t x, size_t y ) {
+//         return 'A';
+//     }
+//     virtual QColor color( size_t x, size_t y ) {
+//         return Qt::red;
+//         
+//     };
+// };
 
 namespace papara {
 log_stream lout;
@@ -64,18 +64,20 @@ int main( int argc, char *argv[] ) {
     QApplication a(argc, argv);
     MainWidget w;
 
-    TestModel tm;
-    
-    TextGrid *mw = new TextGrid;
-    mw->setModel( &tm );
-    QScrollArea sa;
-    sa.setWidget(mw);
-    
-//     QScrollArea sa;
-    sa.resize(300,200);
-    
-    
-    sa.show();
+//     if(false) {
+//         TestModel tm;
+//         
+//         TextGrid *mw = new TextGrid;
+//         mw->setModel( &tm );
+//         QScrollArea sa;
+//         sa.setWidget(mw);
+//         
+//         //     QScrollArea sa;
+//         sa.resize(300,200);
+//         
+//         
+//         sa.show();
+//     }
     
     w.show();
 

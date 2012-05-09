@@ -11,6 +11,9 @@
 
 #include "ivymike/time.h"
 
+
+
+
 streambuf_to_q_plain_text_edit::streambuf_to_q_plain_text_edit( QPlainTextEdit *qpte, std::size_t buff_sz, std::size_t put_back )
 :
   put_back_(std::max(put_back, size_t(1))),
@@ -121,6 +124,103 @@ private:
 };
 
 
+class alignment_grid_model : public TextGridModel {
+public:
+    alignment_grid_model( output_alignment_store *oas, bool use_ref ) : oas_(oas), use_ref_(use_ref) {}
+    
+    
+    virtual QSize size() {
+        if( use_ref_ ) {
+            return QSize( oas_->ref_at(0).size(), oas_->num_ref() );
+        } else {
+            return QSize( oas_->qs_at(0).size(), oas_->num_qs() );
+        }
+            
+    }
+    
+    virtual QChar data( size_t x, size_t y ) {
+        try {
+            return data_int(x,y);
+        } catch( std::out_of_range ) {
+            return 'X';
+        }
+    }
+    inline QChar data_int( size_t x, size_t y ) {
+        char ret;
+        
+       
+        
+//         std::cout << x << " " << y << " " << use_ref_ << "\n";
+        if( use_ref_ ) {
+            /*if( y >= oas_->num_ref() ) {
+                std::cerr << "meeep y: " << y << "\n";
+            
+                return 'Y';
+            }
+            
+            
+            if( x >= oas_->ref_at(y).size() ) {
+                std::cerr << "meeep x: " << x << "\n";
+            
+                return 'X';
+            }*/ 
+                
+            
+            ret = (char)oas_->ref_at(y).at(x);
+            
+        } else {
+//             if( y >= oas_->num_qs() ) {
+//                 std::cerr << "qs meeep y: " << y << "\n";
+//                 
+//                 return 'W';
+//             }
+//             
+//             
+//             if( x >= oas_->qs_at(y).size() ) {
+//                 std::cerr << "qs meeep x: " << x << "\n";
+//                 return 'Z';
+//                 
+//             }
+            
+            ret = (char)oas_->qs_at(y).at(x);
+            
+        }
+        
+        return ret;
+    }
+    virtual QColor color( size_t x, size_t y ) {
+        char c;
+        
+        try {
+            if( use_ref_ ) {
+                c = (char)oas_->ref_at(y).at(x);
+            } else {
+                c = (char)oas_->qs_at(y).at(x);   
+            }
+        } catch( std::out_of_range x ) {
+            return QColor( 255, 0, 255 );
+        }
+        
+        switch( c ) {
+        case 'A':
+            return QColor( 255, 0, 0 );
+        case 'C':
+            return QColor( 0, 255, 0 );
+        case 'G':
+            return QColor( 0, 0, 255 );
+        case 'T':
+            return QColor( 255, 200, 0 );
+        default:
+            return Qt::white;
+        }
+        
+    }
+private:
+    output_alignment_store *oas_;
+    bool use_ref_;
+};
+
+
 class papara_state {
 public:
 
@@ -216,25 +316,52 @@ private:
 MainWidget::MainWidget(QWidget *parent) :
     QWidget(parent),
     ui(new Ui::MainWidget),
+    progress_dialog_(0),
+    tg_ref_(0),
+    tg_qs_(0),
     table_model_(0),
     qs_table_model_(0),
-    ref_table_model_(0,true),
-    progress_dialog_(0)
+    ref_table_model_(0,true)
+    
 {
    
     
     ui->setupUi(this);
 
+    ui->cbZoom->addItem("100%", 1.0);
+    
+    ui->cbZoom->addItem("10%", 0.1);
+    ui->cbZoom->addItem("50%", 0.5);
+    
+    ui->cbZoom->addItem("150%", 1.5);
+    
+    
 //     ui->pte_log->setVisible(false);
     
+//     sv_ref_ = new QScrollArea(ui->w_ref);
+//     sv_qs_ = new QScrollArea(ui->w_qs);
+//     
+//     sv_ref_->show();
+//     sv_qs_->show();
+// //     ui->w_ref->setSizePolicy( QSizePolicy::Expanding, QSizePolicy::Expanding );
+//     sv_qs_->setSizePolicy( QSizePolicy::Expanding, QSizePolicy::Expanding );
+//     sv_ref_->setSizePolicy( QSizePolicy::Expanding, QSizePolicy::Expanding );
+//     
+    sv_ref_ = new QScrollArea();
+    sv_qs_ = new QScrollArea();
+    
+    ui->splitter->insertWidget(0, sv_ref_);
+    ui->splitter->insertWidget(1, sv_qs_);
     
     
-    connect(ui->tv_alignment->horizontalScrollBar(), SIGNAL(valueChanged(int)), ui->tv_qs->horizontalScrollBar(), SLOT(setValue(int)));
-    connect(ui->tv_qs->horizontalScrollBar(), SIGNAL(valueChanged(int)), ui->tv_alignment->horizontalScrollBar(), SLOT(setValue(int)));
-   // ui->tv_alignment->setModel( &table_model_ );
+    connect(sv_ref_->horizontalScrollBar(), SIGNAL(valueChanged(int)), sv_qs_->horizontalScrollBar(), SLOT(setValue(int)));
+    connect(sv_qs_->horizontalScrollBar(), SIGNAL(valueChanged(int)), sv_ref_->horizontalScrollBar(), SLOT(setValue(int)));
+   
+    
+    // ui->tv_alignment->setModel( &table_model_ );
 
 #ifndef WIN32
-	if( false ) {
+    if( !false ) {
         tree_filename_ = "/home/sim/src_exelixis/contraption/small.tree";
         ref_filename_ = "/home/sim/src_exelixis/contraption/small.phy";
         qs_filename_ = "/home/sim/src_exelixis/contraption/small_qs.fa";
@@ -361,14 +488,14 @@ void MainWidget::on_state_ready(papara_state *state) {
     papara_.reset( state );
     table_model_.set_papara_state( state );
 
-    ui->tv_alignment->setModel(&table_model_);
+   /* ui->tv_alignment->setModel(&table_model_);
     ui->tv_alignment->horizontalHeader()->hide();
     ui->tv_alignment->verticalHeader()->hide();
-    
+   */ 
 //     ui->tv_alignment->resizeColumnsToContents();
 //     ui->tv_alignment->resizeRowsToContents();
     
-    resize_rows_columns(ui->tv_alignment, 12, 12 );
+//     resize_rows_columns(ui->tv_alignment, 12, 12 );
     setEnabled(true);
 
     ui->pte_log->appendPlainText("papara static state initialized");
@@ -399,25 +526,52 @@ void MainWidget::on_scoring_done(output_alignment_store* oa, papara::scoring_res
     assert( scoring_result_.data() == res );
     
     output_alignment_.reset(oa);
-    qs_table_model_.set_oas(oa);
-    ref_table_model_.set_oas(oa);
+//     qs_table_model_.set_oas(oa);
+//     ref_table_model_.set_oas(oa);
 
+    qs_grid_model_.reset(new alignment_grid_model(oa, false));
+    ref_grid_model_.reset(new alignment_grid_model(oa, true));
   
-    int hvalue = -1;
+//     float zoom_factor = ui->cbZoom->
     
-    if( ui->tv_qs->model() != 0 ) {
-//         old_num_cols = ui->tv_qs->model()->columnCount();
-    
-        hvalue = ui->tv_qs->horizontalScrollBar()->value();
+    {
+        tg_ref_ = new TextGrid();
+        
+        tg_ref_->setModel(qs_grid_model_.data());
+        sv_qs_->setWidget(tg_ref_);
+        
+//         sv_qs_->setLayout(new);
     }
     
-    ui->tv_qs->setModel(0);
-    ui->tv_qs->setModel(&qs_table_model_);
-    ui->tv_qs->horizontalHeader()->hide();
-    ui->tv_qs->verticalHeader()->hide();
+    {
+        tg_qs_ = new TextGrid();
+        tg_qs_->setModel(ref_grid_model_.data());
+        sv_ref_->setWidget(tg_qs_);
+    }
+    
+    connect(tg_ref_, SIGNAL(zoomChanged(int)), tg_qs_, SLOT(setZoom(int)));
+    connect(tg_qs_, SIGNAL(zoomChanged(int)), tg_ref_, SLOT(setZoom(int)));
+    connect(tg_ref_, SIGNAL(zoomChanged(int)), ui->slZoom, SLOT(setValue(int)));
+    connect(tg_qs_, SIGNAL(zoomChanged(int)), ui->slZoom, SLOT(setValue(int)));
+    connect(ui->slZoom, SIGNAL(valueChanged(int)), tg_ref_, SLOT(setZoom(int)));
+    connect(ui->slZoom, SIGNAL(valueChanged(int)), tg_qs_, SLOT(setZoom(int)));
+    
+    int hvalue = -1;
+    
+    if( sv_qs_->widget() != 0 ) {
+//         old_num_cols = ui->tv_qs->model()->columnCount();
+    
+        hvalue = sv_qs_->horizontalScrollBar()->value();
+    }
+    
+//     ui->tv_qs->setModel(0);
+//     ui->tv_qs->setModel(&qs_table_model_);
+//     ui->tv_qs->horizontalHeader()->hide();
+//     ui->tv_qs->verticalHeader()->hide();
 //     ui->tv_qs->resizeColumnsToContents();
 //     ui->tv_qs->resizeRowsToContents();
 //     
+/*
     resize_rows_columns(ui->tv_qs, 12, 12);
     
     if(true) {
@@ -437,11 +591,14 @@ void MainWidget::on_scoring_done(output_alignment_store* oa, papara::scoring_res
         if( vvalue >= 0 ) {
             ui->tv_alignment->horizontalScrollBar()->setValue(vvalue);
         }
-    }
+    }*/
     
-    if( hvalue >= 0 ) {
-        ui->tv_qs->horizontalScrollBar()->setValue(hvalue);
-    }
+//     if( hvalue >= 0 ) {
+//         ui->tv_qs->horizontalScrollBar()->setValue(hvalue);
+//     }
+
+
+
     ui->pte_log->appendPlainText("scoring done");
     setEnabled(true);
 
@@ -652,13 +809,13 @@ QVariant alignment_table_model::data(const QModelIndex &index, int role ) const 
              
              switch( c ) {
              case 'A':
-                 return QBrush( QColor( 255, 128, 128 ) );
-             case 'C':
-                 return QBrush( QColor( 128, 255, 128 ) );
-             case 'G':
                  return QBrush( QColor( 128, 128, 255 ) );
-             case 'T':
+             case 'C':
+                 return QBrush( QColor( 255, 128, 128 ) );
+             case 'G':
                  return QBrush( QColor( 255, 255, 128 ) );
+             case 'T':
+                 return QBrush( QColor( 128, 255, 128 ) );
              default:
                  return QVariant();
              }
@@ -707,6 +864,17 @@ void MainWidget::on_cbRefGaps_stateChanged(int s) {
         // TODO: make the forwarding dependent on expected time of alignment generation.
         on_pbRun_clicked(); // trigger 'run' iff scoring results are already available
     }
+    
+}
+void MainWidget::on_cbZoom_activated(int idx) {
+    if( tg_qs_ != 0 ) {
+        tg_qs_->setZoom(ui->cbZoom->itemData(idx).toFloat());
+    }
+    
+    if( tg_ref_ != 0 ) {
+        tg_ref_->setZoom(ui->cbZoom->itemData(idx).toFloat());
+    }
+    
     
 }
 

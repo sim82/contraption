@@ -5,9 +5,11 @@
 #include <iostream>
 #include <QScopedPointer>
 #include <QAbstractTableModel>
+#include <QScrollArea>
 #include <string>
 #include <cassert>
 #include <deque>
+#include "TextGrid.h"
 
 class QPlainTextEdit;
 class QProgressDialog;
@@ -204,6 +206,8 @@ private Q_SLOTS:
     void on_pbLoad_clicked();
     void on_pbRun_clicked() ;
     void on_cbRefGaps_stateChanged( int s ) ; 
+    void on_cbZoom_activated( int idx );
+    
 private:
     void resize_rows_columns( QTableView *tv, int row_size, int column_size );
     
@@ -214,6 +218,21 @@ private:
     QScopedPointer<papara_state> papara_;
     QScopedPointer<output_alignment_store> output_alignment_;
     QScopedPointer<papara::scoring_results> scoring_result_;
+    
+    
+//     TextGrid *tg_ref_;
+//     TextGrid *tg_qs_;
+//     
+    TextGrid *tg_ref_;
+    TextGrid *tg_qs_;
+    
+    
+    QScrollArea *sv_ref_;
+    QScrollArea *sv_qs_;
+    
+    
+    QScopedPointer<TextGridModel> ref_grid_model_;
+    QScopedPointer<TextGridModel> qs_grid_model_;
     
     
     raw_alignment_table_model table_model_;
