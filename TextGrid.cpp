@@ -125,9 +125,11 @@ void TextGrid::paintEvent(QPaintEvent* e) {
         for( int y = yfirst; y <= ylast; ++y ) {
             for( int x = xfirst; x <= xlast; ++x ) {
                 
-                QRect drf(x * zsizef.width(), y * zsizef.height(), ceil(zsizef.width()), ceil(zsizef.height()));
-                
-                
+                QPoint topleft( x * zsizef.width(), y * zsizef.height() );
+                QPoint bottomright( (x+1) * zsizef.width(), (y+1) * zsizef.height() );
+                QRect drf( topleft, bottomright );
+   
+   
                 //             QChar c = '0';//model_->data(x,y);
                 QChar c = model_->data(x,y);
                 //             QStaticText qst(c);

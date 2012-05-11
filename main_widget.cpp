@@ -361,7 +361,7 @@ MainWidget::MainWidget(QWidget *parent) :
     // ui->tv_alignment->setModel( &table_model_ );
 
 #ifndef WIN32
-    if( !false ) {
+    if( false ) {
         tree_filename_ = "/home/sim/src_exelixis/contraption/small.tree";
         ref_filename_ = "/home/sim/src_exelixis/contraption/small.phy";
         qs_filename_ = "/home/sim/src_exelixis/contraption/small_qs.fa";
@@ -444,6 +444,7 @@ void MainWidget::on_pbLoad_clicked()
 
     papara_.reset();
 
+    
     setEnabled(false);
 
     QThread *thread = new QThread;
@@ -462,7 +463,9 @@ void MainWidget::on_pbLoad_clicked()
 
 
 void MainWidget::on_pbRun_clicked() {
-    setEnabled(false);
+    //setEnabled(false);
+    ui->frButtons->setEnabled(false);
+   
    
     progress_dialog_ = new QProgressDialog( "Doing the papara", "cancel (not really)", 0, 1 );
     progress_dialog_->setMinimumDuration(0);
@@ -497,7 +500,7 @@ void MainWidget::on_state_ready(papara_state *state) {
     
 //     resize_rows_columns(ui->tv_alignment, 12, 12 );
     setEnabled(true);
-
+    
     ui->pte_log->appendPlainText("papara static state initialized");
 }
 
@@ -600,8 +603,8 @@ void MainWidget::on_scoring_done(output_alignment_store* oa, papara::scoring_res
 
 
     ui->pte_log->appendPlainText("scoring done");
-    setEnabled(true);
-
+    ui->frButtons->setEnabled(true);
+   
     
 }
 
