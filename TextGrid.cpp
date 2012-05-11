@@ -1,3 +1,4 @@
+
 #include <QPainter>
 #include <QPaintEvent>
 #include <QStaticText>
@@ -7,6 +8,7 @@
 #include <cmath>
 #include <iostream>
 #include <stdexcept>
+#include <cassert>
 #include "TextGrid.h"
 
 
@@ -70,7 +72,7 @@ void TextGrid::paintEvent(QPaintEvent* e) {
 
 
 void TextGrid::paintEvent(QPaintEvent* e) {
-    
+    assert( model_ != 0 );
     try {
     
         QRect r = e->rect();

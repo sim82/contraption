@@ -48,13 +48,28 @@ SET( SAMPLE_SRCS
   )
 
 
+set( LARGALI_SRCS
+	large_ali.cpp
+	TextGrid.cpp
+	)
+
+set( LARGALI_UIS
+	large_ali.ui
+	)
+
+set( LARGALI_MOC_HDRS
+    large_ali.h
+	TextGrid.h
+	)
 
 # this will run uic on .ui files:
 QT4_WRAP_UI( SAMPLE_UI_HDRS ${SAMPLE_UIS} )
+QT4_WRAP_UI( LARGALI_UI_HDRS ${LARGALI_UIS} )
 
 # and finally this will run moc:
 QT4_WRAP_CPP( SAMPLE_MOC_SRCS ${SAMPLE_MOC_HDRS} )
 
+QT4_WRAP_CPP( LARGALI_MOC_SRCS ${LARGALI_MOC_HDRS} )
 # we need this to be able to include headers produced by uic in our code
 # (CMAKE_BINARY_DIR holds a path to the build directory, while INCLUDE_DIRECTORIES() works just like INCLUDEPATH from qmake)
 INCLUDE_DIRECTORIES( ${CMAKE_BINARY_DIR} )
@@ -62,6 +77,8 @@ INCLUDE_DIRECTORIES( ${CMAKE_BINARY_DIR} )
 # here we instruct CMake to build "sample" executable from all of the source files
 
 add_executable( test main.cpp main_widget.cpp TextGrid.cpp ${SAMPLE_MOC_SRCS} ${SAMPLE_UI_HDRS})
+add_executable( largali largali_main.cpp large_ali.cpp TextGrid.cpp ${LARGALI_MOC_SRCS} ${LARGALI_UI_HDRS})
 
 
 target_link_libraries(test ${QT_LIBRARIES} papara_core ivymike ublas_jama )
+target_link_libraries(largali ${QT_LIBRARIES} ivymike ublas_jama )
