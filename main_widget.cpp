@@ -8,7 +8,7 @@
 #include <QLabel>
 #include <QTableView>
 #include <QScrollBar>
-
+#include <QMessageBox>
 #include "ivymike/time.h"
 
 
@@ -231,7 +231,8 @@ public:
           ldev( ost_, log_file_ ),
           lout_guard(  papara::lout, ldev ),
           qs_(qs_name),
-          refs_(tree_name.c_str(), ref_name.c_str(), &qs_ )
+          refs_(tree_name.c_str(), ref_name.c_str(), &qs_ ),
+          scoring_parameters_(papara::papara_score_parameters::default_scores())
     {
 
 
@@ -240,6 +241,10 @@ public:
 //        papara::lout << "bla bla bla" << std::endl;
     }
 
+    void set_scoring_parameters( const papara::papara_score_parameters &sp ) {
+        scoring_parameters_ = sp;
+    }
+    
     void do_preprocessing() {
 
         papara::lout << "qs preprocess" << std::endl;
@@ -262,9 +267,12 @@ public:
         
         const size_t num_threads = 2;
         const size_t num_candidates = 1;
-        papara::papara_score_parameters sp = papara::papara_score_parameters::default_scores();
+      //  papara::papara_score_parameters sp = papara::papara_score_parameters::default_scores();
         papara::scoring_results *res = new papara::scoring_results(qs_.size(), papara::scoring_results::candidates(num_candidates));
-        papara::driver<pvec_pgap,papara::tag_dna>::calc_scores(num_threads, refs_, qs_, res, sp );
+        
+        
+        scoring_parameters_.print(std::cerr);
+        papara::driver<pvec_pgap,papara::tag_dna>::calc_scores(num_threads, refs_, qs_, res, scoring_parameters_ );
         
         t1.add_int();
         t1.print( );//papara::lout );
@@ -277,8 +285,10 @@ public:
         
         QScopedPointer<output_alignment_store> oas(new output_alignment_store);
         
-        papara::papara_score_parameters sp = papara::papara_score_parameters::default_scores();
-        papara::driver<pvec_pgap,papara::tag_dna>::align_best_scores_oa( oas.data(), qs_, refs_, res, size_t(0), ref_gaps, sp );
+        //papara::papara_score_parameters sp = papara::papara_score_parameters::default_scores();
+        
+        scoring_parameters_.print(std::cerr);
+        papara::driver<pvec_pgap,papara::tag_dna>::align_best_scores_oa( oas.data(), qs_, refs_, res, size_t(0), ref_gaps, scoring_parameters_ );
  
         t1.add_int();
         t1.print();//papara::lout);
@@ -294,6 +304,10 @@ public:
         return refs_;
     }
     void align_single(size_t qs_idx);
+    
+    papara::papara_score_parameters scoring_parameters() {
+        return scoring_parameters_;
+    }
 private:
 
     streambuf_to_q_plain_text_edit sbq_;
@@ -308,6 +322,8 @@ private:
     papara_state();
     papara::queries<papara::tag_dna> qs_;
     papara::references<pvec_pgap,papara::tag_dna> refs_;
+    
+    papara::papara_score_parameters scoring_parameters_;
     
 };
 
@@ -328,12 +344,16 @@ MainWidget::MainWidget(QWidget *parent) :
     
     ui->setupUi(this);
 
-    ui->cbZoom->addItem("100%", 1.0);
     
-    ui->cbZoom->addItem("10%", 0.1);
-    ui->cbZoom->addItem("50%", 0.5);
+    ui->pbRun->setPalette(QPalette( Qt::red ));
     
-    ui->cbZoom->addItem("150%", 1.5);
+    papara::papara_score_parameters sp = papara::papara_score_parameters::default_scores();
+    
+    ui->sbOpen->setValue( sp.gap_open );
+    ui->sbExt->setValue( sp.gap_extend );
+    ui->sbMatch->setValue( sp.match );
+    ui->sbCgap->setValue( sp.match_cgap );
+    
     
     
 //     ui->pte_log->setVisible(false);
@@ -379,6 +399,11 @@ MainWidget::MainWidget(QWidget *parent) :
 	ref_filename_ = "C:/2012_robert_454/cora_Sanger_reference_alignment.phy";
 	qs_filename_ = "C:/2012_robert_454/cluster_52_72_cora_inversa_squamiformis_DIC_148_149.fas";
 #endif
+    
+    check_filenames();
+    
+    
+    
 }
 
 MainWidget::~MainWidget()
@@ -408,6 +433,8 @@ void MainWidget::on_pb_tree_clicked()
     std::cout << "tree\n";
     tree_filename_ = de_q_string(QFileDialog::getOpenFileName(this));
     ui->pte_log->appendPlainText(tree_filename_.c_str());
+    
+    check_filenames();
 }
 
 void MainWidget::on_pb_ref_clicked()
@@ -415,6 +442,7 @@ void MainWidget::on_pb_ref_clicked()
     std::cout << "ref\n";
     ref_filename_ = de_q_string(QFileDialog::getOpenFileName(this));
     ui->pte_log->appendPlainText(ref_filename_.c_str());
+    check_filenames();
 }
 
 void MainWidget::on_pb_qs_clicked()
@@ -422,6 +450,7 @@ void MainWidget::on_pb_qs_clicked()
     std::cout << "qs\n";
     qs_filename_ = de_q_string(QFileDialog::getOpenFileName(this));
     ui->pte_log->appendPlainText(qs_filename_.c_str());
+    check_filenames();
 }
 
 
@@ -464,16 +493,59 @@ void MainWidget::on_pbLoad_clicked()
 
 void MainWidget::on_pbRun_clicked() {
     //setEnabled(false);
+    
+    
+    
+    int sopen = ui->sbOpen->value();
+    int sext = ui->sbExt->value();
+    int smatch = ui->sbMatch->value();
+    int scgap = ui->sbCgap->value();
+    
+    if( sopen > 0 || sext > 0 || smatch < 1 || scgap > 0 ) {
+        QMessageBox::StandardButton b = QMessageBox::warning( this, "Weird Scoring Scheme", "The scoring scheme you selected seems weird\nThe results may be even weirder. Continue?", QMessageBox::Ok|QMessageBox::Cancel );
+        
+        if( b != QMessageBox::Ok ) {
+            return; // bail out
+        }
+        
+    }
+    
+//     std::cout << "x: " << smatch + scgap << "\n";
+    if( smatch + scgap >= 0 ) {
+        QMessageBox::StandardButton b = QMessageBox::warning( this, "Scoring Scheme Trouble", "The scoring scheme you selected does not work with the current version of PaPaRa because match+match_cgap < 0. This is no fundamental restriction of the algorithm but necessary for a specific kind of performance optimization.\nPlease chose a smaller match score or a smaller match cgap score.\n\nIf you think that this is not acceptable, please write me at simberger@gmail.com", QMessageBox::Cancel );
+        
+
+        return; // bail out
+
+        
+    }
     ui->frButtons->setEnabled(false);
-   
+    ui->frRun->setEnabled(false);
    
     progress_dialog_ = new QProgressDialog( "Doing the papara", "cancel (not really)", 0, 1 );
     progress_dialog_->setMinimumDuration(0);
+    
+    
+    papara::papara_score_parameters op = papara_->scoring_parameters();
+    papara::papara_score_parameters np(sopen, sext, smatch, scgap );
+    
+    // check if the scoring scheme was changed and clear scoring_results if necessary
+    if( !scoring_result_.isNull() && op != np ) {
+//         QMessageBox::StandardButton b = QMessageBox::warning( this, "Weird Scoring Scheme", "clear results", QMessageBox::Ok );
+        
+        scoring_result_.reset(0);
+        
+    }
+    
+    papara_->set_scoring_parameters( np );
+    
+    
     QThread *thread = new QThread;
     scoring_worker *worker = new scoring_worker( ui->pte_log, papara_.data(), scoring_result_.data(), ui->cbRefGaps->isChecked() );
     //obj is a pointer to a QObject that will trigger the work to start. It could just be this
 
-
+    
+    
     worker->moveToThread(thread);
     thread->start();
     QMetaObject::invokeMethod(worker, "doWork", Qt::QueuedConnection);
@@ -502,6 +574,8 @@ void MainWidget::on_state_ready(papara_state *state) {
     setEnabled(true);
     
     ui->pte_log->appendPlainText("papara static state initialized");
+    
+    ui->frRun->setEnabled(true);
 }
 
 void MainWidget::resize_rows_columns( QTableView *tv, int row_size, int column_size ) {
@@ -538,20 +612,33 @@ void MainWidget::on_scoring_done(output_alignment_store* oa, papara::scoring_res
 //     float zoom_factor = ui->cbZoom->
     
     {
-        tg_ref_ = new TextGrid();
+//         int hs = -1;
+//         int vs = -1;
+        if( tg_ref_ == 0 ) {
+            tg_ref_ = new TextGrid();
+            sv_qs_->setWidget(tg_ref_);
+        }
+        
+        
         
         tg_ref_->setModel(qs_grid_model_.data());
-        sv_qs_->setWidget(tg_ref_);
+        
         
 //         sv_qs_->setLayout(new);
     }
     
     {
-        tg_qs_ = new TextGrid();
+        
+        if( tg_qs_ == 0 ) {
+            tg_qs_ = new TextGrid();
+            sv_ref_->setWidget(tg_qs_);
+        }
         tg_qs_->setModel(ref_grid_model_.data());
-        sv_ref_->setWidget(tg_qs_);
+        
     }
-    
+
+    tg_ref_->setZoom(ui->slZoom->value());
+    tg_qs_->setZoom(ui->slZoom->value());
     connect(tg_ref_, SIGNAL(zoomChanged(int)), tg_qs_, SLOT(setZoom(int)));
     connect(tg_qs_, SIGNAL(zoomChanged(int)), tg_ref_, SLOT(setZoom(int)));
     connect(tg_ref_, SIGNAL(zoomChanged(int)), ui->slZoom, SLOT(setValue(int)));
@@ -603,8 +690,9 @@ void MainWidget::on_scoring_done(output_alignment_store* oa, papara::scoring_res
 
 
     ui->pte_log->appendPlainText("scoring done");
+    ui->pbRun->setAutoFillBackground(false);
     ui->frButtons->setEnabled(true);
-   
+    ui->frRun->setEnabled(true);
     
 }
 
@@ -870,14 +958,33 @@ void MainWidget::on_cbRefGaps_stateChanged(int s) {
     
 }
 void MainWidget::on_cbZoom_activated(int idx) {
-    if( tg_qs_ != 0 ) {
-        tg_qs_->setZoom(ui->cbZoom->itemData(idx).toFloat());
-    }
+//     if( tg_qs_ != 0 ) {
+//         tg_qs_->setZoom(ui->cbZoom->itemData(idx).toFloat());
+//     }
+//     
+//     if( tg_ref_ != 0 ) {
+//         tg_ref_->setZoom(ui->cbZoom->itemData(idx).toFloat());
+//     }
     
-    if( tg_ref_ != 0 ) {
-        tg_ref_->setZoom(ui->cbZoom->itemData(idx).toFloat());
-    }
     
+}
+void MainWidget::invalidateScores() {
+//     std::cout << "invalidate\n";
+//     QPalette pal;
+//     pal.setColor(QPalette::Text, Qt::red);
+    ui->pbRun->setAutoFillBackground(true);
+    
+}
+static bool is_readable( std::string filename ) {
+    std::ifstream is( filename.c_str() );
+    
+    return is.good();
+}
+
+void MainWidget::check_filenames() { 
+    if( is_readable( tree_filename_ ) && is_readable( ref_filename_ ) && is_readable( qs_filename_ ) ) {
+        ui->pbLoad->setEnabled(true);
+    }
     
 }
 

@@ -208,7 +208,15 @@ private Q_SLOTS:
     void on_cbRefGaps_stateChanged( int s ) ; 
     void on_cbZoom_activated( int idx );
     
+    void on_sbOpen_valueChanged( int v ) { invalidateScores(); }
+    void on_sbExt_valueChanged( int v ) { invalidateScores(); }
+    void on_sbMatch_valueChanged( int v ) { invalidateScores(); }
+    void on_sbCgap_valueChanged( int v ) { invalidateScores(); }
+    
 private:
+    void check_filenames() ;
+    void invalidateScores() ;
+    
     void resize_rows_columns( QTableView *tv, int row_size, int column_size );
     
     Ui::MainWidget *ui;

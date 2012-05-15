@@ -119,7 +119,9 @@ void LargeAli::on_pbLoad_clicked() {
 		text_grid_ = new TextGrid();
 		text_grid_->setModel(grid_model_.data());
 	
-	
+        
+        connect( ui->slZoom, SIGNAL(valueChanged(int)), text_grid_, SLOT(setZoom(int)));
+        connect( text_grid_, SIGNAL(zoomChanged(int)), ui->slZoom, SLOT(setValue(int)));
 		ui->saAlignment->setWidget(text_grid_);
 	} catch( boost::interprocess::interprocess_exception x ) {
 		std::cerr << "caught: " << x.what() << "\n";
