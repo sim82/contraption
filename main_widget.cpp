@@ -622,7 +622,7 @@ void MainWidget::on_scoring_done(output_alignment_store* oa, papara::scoring_res
         
         
         tg_ref_->setModel(qs_grid_model_.data());
-        
+        tg_ref_->repaint();
         
 //         sv_qs_->setLayout(new);
     }
@@ -634,7 +634,7 @@ void MainWidget::on_scoring_done(output_alignment_store* oa, papara::scoring_res
             sv_ref_->setWidget(tg_qs_);
         }
         tg_qs_->setModel(ref_grid_model_.data());
-        
+        tg_qs_->repaint();
     }
 
     tg_ref_->setZoom(ui->slZoom->value());
@@ -690,6 +690,8 @@ void MainWidget::on_scoring_done(output_alignment_store* oa, papara::scoring_res
 
 
     ui->pte_log->appendPlainText("scoring done");
+	ui->pbRun->setPalette( QPalette() );
+
     ui->pbRun->setAutoFillBackground(false);
     ui->frButtons->setEnabled(true);
     ui->frRun->setEnabled(true);
@@ -970,8 +972,8 @@ void MainWidget::on_cbZoom_activated(int idx) {
 }
 void MainWidget::invalidateScores() {
 //     std::cout << "invalidate\n";
-//     QPalette pal;
-//     pal.setColor(QPalette::Text, Qt::red);
+    
+	ui->pbRun->setPalette(QPalette(Qt::red));
     ui->pbRun->setAutoFillBackground(true);
     
 }
