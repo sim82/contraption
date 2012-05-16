@@ -56,6 +56,10 @@ class TextGrid : public QWidget {
 public:
     TextGrid( QWidget* w = 0, int zoom_factor = 100, QSize cell_size = QSize( 11, 14 )) ; 
     
+    virtual ~TextGrid() {
+        std::cout << "~TextGrid\n";
+    }
+    
     void setModel( TextGridModel *model ) ;
     
     void paintEvent( QPaintEvent *e ) ;

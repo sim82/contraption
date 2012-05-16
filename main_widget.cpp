@@ -333,6 +333,7 @@ MainWidget::MainWidget(QWidget *parent) :
     QWidget(parent),
     ui(new Ui::MainWidget),
     progress_dialog_(0),
+    bg_thread_(new QThread()),
     tg_ref_(0),
     tg_qs_(0),
     table_model_(0),
@@ -402,7 +403,7 @@ MainWidget::MainWidget(QWidget *parent) :
     
     check_filenames();
     
-    
+    bg_thread_->start();
     
 }
 
@@ -476,17 +477,21 @@ void MainWidget::on_pbLoad_clicked()
     
     setEnabled(false);
 
-    QThread *thread = new QThread;
-    state_worker *worker = new state_worker( ui->pte_log, tree_filename_, ref_filename_, qs_filename_ );
+   // QThread *thread = new QThread;
+    
+    
+    state_worker_.reset( new state_worker( ui->pte_log, tree_filename_, ref_filename_, qs_filename_ ));
     //obj is a pointer to a QObject that will trigger the work to start. It could just be this
 
+    assert( bg_thread_->isRunning() );
+    state_worker_->moveToThread(bg_thread_.data());
+//     thread->start();
 
-    worker->moveToThread(thread);
-    thread->start();
-    QMetaObject::invokeMethod(worker, "doWork", Qt::QueuedConnection);
+    
+    connect(state_worker_.data(), SIGNAL(done( papara_state *)), this, SLOT(on_state_ready(papara_state *)));
+
+    QMetaObject::invokeMethod(state_worker_.data(), "doWork", Qt::QueuedConnection);
     //obj will need to emit startWork() to get the work going.
-
-    connect(worker, SIGNAL(done( papara_state *)), this, SLOT(on_state_ready(papara_state *)));
 
 }
 
@@ -540,19 +545,21 @@ void MainWidget::on_pbRun_clicked() {
     papara_->set_scoring_parameters( np );
     
     
-    QThread *thread = new QThread;
-    scoring_worker *worker = new scoring_worker( ui->pte_log, papara_.data(), scoring_result_.data(), ui->cbRefGaps->isChecked() );
+   // QThread *thread = new QThread;
+    scoring_worker_.reset( new scoring_worker( ui->pte_log, papara_.data(), scoring_result_.data(), ui->cbRefGaps->isChecked() ));
     //obj is a pointer to a QObject that will trigger the work to start. It could just be this
 
     
     
-    worker->moveToThread(thread);
-    thread->start();
-    QMetaObject::invokeMethod(worker, "doWork", Qt::QueuedConnection);
+    scoring_worker_->moveToThread(bg_thread_.data());
+//     thread->start();
+    
+    connect(scoring_worker_.data(), SIGNAL(done( output_alignment_store *, papara::scoring_results *)), this, SLOT(on_scoring_done(output_alignment_store *, papara::scoring_results *)));
+    
+    QMetaObject::invokeMethod(scoring_worker_.data(), "doWork", Qt::QueuedConnection);
     //obj will need to emit startWork() to get the work going.
 
-    connect(worker, SIGNAL(done( output_alignment_store *, papara::scoring_results *)), this, SLOT(on_scoring_done(output_alignment_store *, papara::scoring_results *)));
-
+    
 }
 
 void MainWidget::on_state_ready(papara_state *state) {
@@ -701,11 +708,14 @@ void MainWidget::on_scoring_done(output_alignment_store* oa, papara::scoring_res
 
 void state_worker::doWork()
 {
+    std::cout << "doWork\n";
    papara_state *ps = new papara_state( qpte_, tree_.data(), ref_.data(), qs_.data());
 
    ps->do_preprocessing();
 
    emit done(ps);
+   
+   finished_ = true;
 }
 
 void scoring_worker::doWork() {
@@ -718,6 +728,8 @@ void scoring_worker::doWork() {
     output_alignment_store *oa = state_->do_scoring( *res_, ref_gaps_ );
     
     emit done(oa, res_);
+    
+    finished_ = true;
 }
 
 raw_alignment_table_model::raw_alignment_table_model(QObject *parent )

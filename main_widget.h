@@ -65,9 +65,13 @@ class state_worker : public QObject
     Q_OBJECT
 
 public:
-    state_worker( QPlainTextEdit *qpte, const std::string &tree, const std::string &ref, const std::string &qs ) : qpte_(qpte), tree_(tree), ref_(ref), qs_(qs) {}
+    state_worker( QPlainTextEdit *qpte, const std::string &tree, const std::string &ref, const std::string &qs ) : qpte_(qpte), tree_(tree), ref_(ref), qs_(qs), finished_(false) {}
 
-    virtual ~state_worker() { std::cout << "~state_worker\n";}
+    virtual ~state_worker() { 
+        std::cout << "~state_worker\n";
+        if( !finished_ ) {qWarning("~state_worker: not finished!\n");}
+        
+    }
 
 public Q_SLOTS:
     void doWork();
@@ -89,6 +93,8 @@ private:
     std::string tree_;
     std::string ref_;
     std::string qs_;
+    
+    bool finished_;
 };
 
 
@@ -98,9 +104,12 @@ class scoring_worker : public QObject
 
 public:
     scoring_worker( QPlainTextEdit *qpte, papara_state *state, papara::scoring_results *res, bool ref_gaps ) 
-    : qpte_(qpte), state_(state), res_(res), ref_gaps_(ref_gaps) {}
+    : qpte_(qpte), state_(state), res_(res), ref_gaps_(ref_gaps), finished_(false) {}
 
-    virtual ~scoring_worker() { std::cout << "~scoring_worker\n";}
+    virtual ~scoring_worker() { 
+        std::cout << "~scoring_worker\n";
+        if( !finished_ ) {qWarning("~scoring_woker: not finished!\n");}
+    }
 
 public Q_SLOTS:
     void doWork();
@@ -122,6 +131,8 @@ private:
     papara_state *state_;
     papara::scoring_results *res_;
     bool ref_gaps_;
+    
+    bool finished_;
 };
 
 // class bg_align_worker : public QObject {
@@ -226,7 +237,9 @@ private:
     QScopedPointer<papara_state> papara_;
     QScopedPointer<output_alignment_store> output_alignment_;
     QScopedPointer<papara::scoring_results> scoring_result_;
-    
+    QScopedPointer<QThread> bg_thread_;
+    QScopedPointer<scoring_worker> scoring_worker_;
+    QScopedPointer<state_worker> state_worker_;
     
 //     TextGrid *tg_ref_;
 //     TextGrid *tg_qs_;
