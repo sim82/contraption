@@ -189,7 +189,9 @@ void TextGrid::updateSize() {
     
 }
 
-void TextGrid::setModel(TextGridModel* model) {
+void TextGrid::setModel(QSharedPointer<TextGridModel> model) {
+    std::cerr << "<<<<<< setModel\n";
+    
     model_ = model;
     model_size_ = model_->size();
     
@@ -248,6 +250,7 @@ QScrollArea* TextGrid::parentScrollArea() {
 
     return psv;
 }
+TextGridModel::~TextGridModel() { std::cerr << "~TextGridModel" << std::endl; }
 // void TextGrid::mousePressEvent(QMouseEvent* e) {
 //     std::cout << "down: " << e->pos().x() << " " << e->pos().y() << "\n";
 //     ss_ = scroll_state(e->pos());

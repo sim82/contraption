@@ -113,16 +113,16 @@ void LargeAli::on_pbLoad_clicked() {
 		large_phy_.reset( new LargePhylip(ali_filename_.c_str() ));
 		//std::cout << "name 0: " << large_phy_->getName(0) << "\n";
 
-		grid_model_.reset( new largali_model(large_phy_.data()));
+        grid_model_ = QSharedPointer<TextGridModel> (new largali_model(large_phy_.data()));
 
 
-		text_grid_ = new TextGrid();
-		text_grid_->setModel(grid_model_.data());
+		text_grid_.reset(new TextGrid());
+		text_grid_->setModel(grid_model_);
 	
         
-        connect( ui->slZoom, SIGNAL(valueChanged(int)), text_grid_, SLOT(setZoom(int)));
-        connect( text_grid_, SIGNAL(zoomChanged(int)), ui->slZoom, SLOT(setValue(int)));
-		ui->saAlignment->setWidget(text_grid_);
+        connect( ui->slZoom, SIGNAL(valueChanged(int)), text_grid_.data(), SLOT(setZoom(int)));
+        connect( text_grid_.data(), SIGNAL(zoomChanged(int)), ui->slZoom, SLOT(setValue(int)));
+		ui->saAlignment->setWidget(text_grid_.data());
 	} catch( boost::interprocess::interprocess_exception x ) {
 		std::cerr << "caught: " << x.what() << "\n";
 		abort();
