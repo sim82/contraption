@@ -4,6 +4,7 @@
 #include <QObject>
 #include <QWidget>
 #include <iostream>
+#include <QSharedPointer>
 #include "TextGrid.h"
 #include "ivymike/LargePhylip.h"
 
@@ -30,12 +31,12 @@ private Q_SLOTS:
 private:
     QScopedPointer<Ui::LargaliMain> ui;
    
-    TextGrid *text_grid_;
+    QScopedPointer<TextGrid> text_grid_;
     
   
     
     
-    QScopedPointer<TextGridModel> grid_model_;
+    QSharedPointer<TextGridModel> grid_model_;
 	QScopedPointer<LargePhylip> large_phy_;
   
 };
