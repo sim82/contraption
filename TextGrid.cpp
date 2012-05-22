@@ -19,7 +19,7 @@ TextGrid::TextGrid(QWidget* w, int zoom_factor, QSize cell_size )
    
 {
     f.setStyleHint(QFont::Monospace);
-    f.setPointSize(12);
+//    f.setPointSize(12);
     
     setFont(f);
     
