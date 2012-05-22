@@ -4,6 +4,7 @@
 
 #include <QWidget>
 #include <QStaticText>
+#include <QSharedPointer>
 #include <vector>
 #include <iostream>
 
@@ -12,6 +13,8 @@ class QScrollArea;
 class TextGridModel {
   
 public:
+    virtual ~TextGridModel() ;
+    
     virtual QSize size() = 0;
     virtual QChar data( size_t x, size_t y ) = 0;
     //virtual QBrush brush( size_t x, size_t y ) = 0;
@@ -60,7 +63,7 @@ public:
         std::cout << "~TextGrid\n";
     }
     
-    void setModel( TextGridModel *model ) ;
+    void setModel( QSharedPointer<TextGridModel> model ) ;
     
     void paintEvent( QPaintEvent *e ) ;
     
@@ -85,7 +88,8 @@ private:
 //     }
     
     
-    TextGridModel *model_;
+    //TextGridModel *model_;
+    QSharedPointer<TextGridModel> model_;
     QSize model_size_;
     QSize cell_size_; // base cell size
     int zoom_factor_;

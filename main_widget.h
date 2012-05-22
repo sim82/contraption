@@ -14,6 +14,7 @@
 class QPlainTextEdit;
 class QProgressDialog;
 class QTableView;
+class QThread;
 
 namespace Ui {
     class MainWidget;
@@ -24,9 +25,34 @@ namespace papara {
 }
 
 
-
+    
 class output_alignment_store;
 class papara_state;
+
+Q_DECLARE_METATYPE(QSharedPointer<papara_state>)
+Q_DECLARE_METATYPE(QSharedPointer<papara::scoring_results> )
+Q_DECLARE_METATYPE(QSharedPointer<output_alignment_store> )
+
+
+class qt_thread_guard {
+public:
+    qt_thread_guard( QThread *thread ) ;
+    ~qt_thread_guard() ;
+    
+    QThread *data() {
+        return thread_.data();
+    }
+    
+    QThread *operator->() { return thread_.operator->(); }
+    
+private:
+    qt_thread_guard();
+    qt_thread_guard( const qt_thread_guard &);
+    qt_thread_guard &operator=( qt_thread_guard &);
+    
+    //QThread * const thread_;
+    QScopedPointer<QThread> thread_;
+};
 
 
 
@@ -76,7 +102,7 @@ public:
 public Q_SLOTS:
     void doWork();
 Q_SIGNALS:
-    void done( papara_state * );
+    void done( QSharedPointer<papara_state> );
 
 private:
 
@@ -103,7 +129,7 @@ class scoring_worker : public QObject
     Q_OBJECT
 
 public:
-    scoring_worker( QPlainTextEdit *qpte, papara_state *state, papara::scoring_results *res, bool ref_gaps ) 
+    scoring_worker( QPlainTextEdit *qpte, QSharedPointer<papara_state> state, QSharedPointer<papara::scoring_results> res, bool ref_gaps ) 
     : qpte_(qpte), state_(state), res_(res), ref_gaps_(ref_gaps), finished_(false) {}
 
     virtual ~scoring_worker() { 
@@ -114,7 +140,7 @@ public:
 public Q_SLOTS:
     void doWork();
 Q_SIGNALS:
-    void done( output_alignment_store *, papara::scoring_results * );
+    void done( QSharedPointer<output_alignment_store>, QSharedPointer<papara::scoring_results> );
 
 private:
 
@@ -128,8 +154,8 @@ private:
 
     QPlainTextEdit *qpte_;
 
-    papara_state *state_;
-    papara::scoring_results *res_;
+    QSharedPointer<papara_state> state_;
+    QSharedPointer<papara::scoring_results> res_;
     bool ref_gaps_;
     
     bool finished_;
@@ -212,8 +238,8 @@ private Q_SLOTS:
     void on_pb_qs_clicked();
 
     
-    void on_state_ready(papara_state *);
-    void on_scoring_done( output_alignment_store *oa, papara::scoring_results *res ) ;
+    void on_state_ready(QSharedPointer< papara_state > state);
+    void on_scoring_done( QSharedPointer< output_alignment_store > oa, QSharedPointer< papara::scoring_results > res ) ;
     void on_pbLoad_clicked();
     void on_pbRun_clicked() ;
     void on_cbRefGaps_stateChanged( int s ) ; 
@@ -234,10 +260,12 @@ private:
 
     QProgressDialog *progress_dialog_;
     
-    QScopedPointer<papara_state> papara_;
-    QScopedPointer<output_alignment_store> output_alignment_;
-    QScopedPointer<papara::scoring_results> scoring_result_;
-    QScopedPointer<QThread> bg_thread_;
+    QSharedPointer<papara_state> papara_;
+    QSharedPointer<output_alignment_store> output_alignment_;
+    QSharedPointer<papara::scoring_results> scoring_result_;
+    
+    
+    qt_thread_guard bg_thread_;
     QScopedPointer<scoring_worker> scoring_worker_;
     QScopedPointer<state_worker> state_worker_;
     
@@ -252,8 +280,8 @@ private:
     QScrollArea *sv_qs_;
     
     
-    QScopedPointer<TextGridModel> ref_grid_model_;
-    QScopedPointer<TextGridModel> qs_grid_model_;
+    QSharedPointer<TextGridModel> ref_grid_model_;
+    QSharedPointer<TextGridModel> qs_grid_model_;
     
     
     raw_alignment_table_model table_model_;

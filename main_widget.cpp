@@ -76,6 +76,8 @@ int streambuf_to_q_plain_text_edit::sync() {
 
 class output_alignment_store : public papara::output_alignment {
 public:
+    virtual ~output_alignment_store() { std::cerr << "<<<<<<<<<<<<<<  output_alignment_store" << std::endl; }
+    
     virtual void push_back( const std::string &name, const out_seq &seq, seq_type t ) {
         if( t == output_alignment::type_qs ) {
             qs_.push_back(seqs_.size());
@@ -126,7 +128,7 @@ private:
 
 class alignment_grid_model : public TextGridModel {
 public:
-    alignment_grid_model( output_alignment_store *oas, bool use_ref ) : oas_(oas), use_ref_(use_ref) {}
+    alignment_grid_model( QSharedPointer<output_alignment_store> oas, bool use_ref ) : oas_(oas), use_ref_(use_ref) {}
     
     
     virtual QSize size() {
@@ -216,7 +218,7 @@ public:
         
     }
 private:
-    output_alignment_store *oas_;
+    QSharedPointer<output_alignment_store> oas_;
     bool use_ref_;
 };
 
@@ -296,7 +298,7 @@ public:
         return oas.take();
     }
     
-    virtual ~papara_state() {}
+    virtual ~papara_state() { std::cout << "~papara_state\n"; }
 
 
 
@@ -354,7 +356,13 @@ MainWidget::MainWidget(QString treeName, QString refName, QString queryName, QWi
     ref_table_model_(0,true)
     
 {
+    
+    qRegisterMetaType<QSharedPointer<papara_state> >();
+    
    
+   
+   qRegisterMetaType<QSharedPointer<papara::scoring_results> >();
+   qRegisterMetaType<QSharedPointer<output_alignment_store> >();
     
     ui->setupUi(this);
 
@@ -439,6 +447,8 @@ MainWidget::MainWidget(QString treeName, QString refName, QString queryName, QWi
 
 MainWidget::~MainWidget()
 {
+   
+    
     delete ui;
 }
 
@@ -495,7 +505,7 @@ void MainWidget::on_pbLoad_clicked()
 //    QProgressDialog *pd = new QProgressDialog( "Initializing papara static data", "cancel (not really)", 0, 1 );
 //    pd->show();
 
-    papara_.reset();
+    papara_.clear();
 
     
     setEnabled(false);
@@ -511,7 +521,7 @@ void MainWidget::on_pbLoad_clicked()
 //     thread->start();
 
     
-    connect(state_worker_.data(), SIGNAL(done( papara_state *)), this, SLOT(on_state_ready(papara_state *)));
+    connect(state_worker_.data(), SIGNAL(done( QSharedPointer<papara_state>)), this, SLOT(on_state_ready(QSharedPointer<papara_state>)));
 
     QMetaObject::invokeMethod(state_worker_.data(), "doWork", Qt::QueuedConnection);
     //obj will need to emit startWork() to get the work going.
@@ -561,7 +571,7 @@ void MainWidget::on_pbRun_clicked() {
     if( !scoring_result_.isNull() && op != np ) {
 //         QMessageBox::StandardButton b = QMessageBox::warning( this, "Weird Scoring Scheme", "clear results", QMessageBox::Ok );
         
-        scoring_result_.reset(0);
+        scoring_result_.clear();
         
     }
     
@@ -569,7 +579,7 @@ void MainWidget::on_pbRun_clicked() {
     
     
    // QThread *thread = new QThread;
-    scoring_worker_.reset( new scoring_worker( ui->pte_log, papara_.data(), scoring_result_.data(), ui->cbRefGaps->isChecked() ));
+    scoring_worker_.reset( new scoring_worker( ui->pte_log, papara_, scoring_result_, ui->cbRefGaps->isChecked() ));
     //obj is a pointer to a QObject that will trigger the work to start. It could just be this
 
     
@@ -577,7 +587,7 @@ void MainWidget::on_pbRun_clicked() {
     scoring_worker_->moveToThread(bg_thread_.data());
 //     thread->start();
     
-    connect(scoring_worker_.data(), SIGNAL(done( output_alignment_store *, papara::scoring_results *)), this, SLOT(on_scoring_done(output_alignment_store *, papara::scoring_results *)));
+    connect(scoring_worker_.data(), SIGNAL(done( QSharedPointer<output_alignment_store>, QSharedPointer<papara::scoring_results>)), this, SLOT(on_scoring_done(QSharedPointer<output_alignment_store>, QSharedPointer<papara::scoring_results>)));
     
     QMetaObject::invokeMethod(scoring_worker_.data(), "doWork", Qt::QueuedConnection);
     //obj will need to emit startWork() to get the work going.
@@ -585,13 +595,13 @@ void MainWidget::on_pbRun_clicked() {
     
 }
 
-void MainWidget::on_state_ready(papara_state *state) {
+void MainWidget::on_state_ready(QSharedPointer<papara_state> state) {
     if( progress_dialog_ != 0 ) {
         delete progress_dialog_;
     }
     
-    papara_.reset( state );
-    table_model_.set_papara_state( state );
+    papara_ = state;
+   // table_model_.set_papara_state( state );
 
    /* ui->tv_alignment->setModel(&table_model_);
     ui->tv_alignment->horizontalHeader()->hide();
@@ -621,24 +631,27 @@ void MainWidget::resize_rows_columns( QTableView *tv, int row_size, int column_s
     }
 }
 
-void MainWidget::on_scoring_done(output_alignment_store* oa, papara::scoring_results *res) {
+void MainWidget::on_scoring_done(QSharedPointer<output_alignment_store> oa, QSharedPointer<papara::scoring_results> res) {
     if( progress_dialog_ != 0 ) {
         delete progress_dialog_;
     }
     
     if( scoring_result_.isNull() ) {
-        scoring_result_.reset(res);
+        scoring_result_ = res;
     }
     
     assert( scoring_result_.data() == res );
     
-    output_alignment_.reset(oa);
+    output_alignment_ = oa;
 //     qs_table_model_.set_oas(oa);
 //     ref_table_model_.set_oas(oa);
 
-    qs_grid_model_.reset(new alignment_grid_model(oa, false));
-    ref_grid_model_.reset(new alignment_grid_model(oa, true));
-  
+//     QScopedPointer<TextGridModel> qs_model(new alignment_grid_model(oa, false));
+//     QScopedPointer<TextGridModel> ref_model(new alignment_grid_model(oa, true));
+    
+    qs_grid_model_ = QSharedPointer<TextGridModel> (new alignment_grid_model(oa, false));
+    ref_grid_model_ = QSharedPointer<TextGridModel> (new alignment_grid_model(oa, true));
+    
 //     float zoom_factor = ui->cbZoom->
     
     {
@@ -646,12 +659,14 @@ void MainWidget::on_scoring_done(output_alignment_store* oa, papara::scoring_res
 //         int vs = -1;
         if( tg_ref_ == 0 ) {
             tg_ref_ = new TextGrid();
-            sv_qs_->setWidget(tg_ref_);
+            sv_ref_->setWidget(tg_ref_);
         }
         
         
         
-        tg_ref_->setModel(qs_grid_model_.data());
+//         tg_ref_->setModel(ref_model.data());
+
+        tg_ref_->setModel(ref_grid_model_);
         tg_ref_->repaint();
         
 //         sv_qs_->setLayout(new);
@@ -661,9 +676,10 @@ void MainWidget::on_scoring_done(output_alignment_store* oa, papara::scoring_res
         
         if( tg_qs_ == 0 ) {
             tg_qs_ = new TextGrid();
-            sv_ref_->setWidget(tg_qs_);
+            sv_qs_->setWidget(tg_qs_);
         }
-        tg_qs_->setModel(ref_grid_model_.data());
+        //tg_qs_->setModel(qs_model.data());
+        tg_qs_->setModel(qs_grid_model_);
         tg_qs_->repaint();
     }
 
@@ -736,21 +752,21 @@ void state_worker::doWork()
 
    ps->do_preprocessing();
 
-   emit done(ps);
+   emit done(QSharedPointer<papara_state>(ps));
    
    finished_ = true;
 }
 
 void scoring_worker::doWork() {
-    if( res_ == 0 ) {
-        res_ = state_->do_scoring_only();
+    if( res_.isNull() ) {
+        res_ = QSharedPointer<papara::scoring_results>(state_->do_scoring_only());
     }
     
     assert( res_ != 0 );
     
     output_alignment_store *oa = state_->do_scoring( *res_, ref_gaps_ );
     
-    emit done(oa, res_);
+    emit done(QSharedPointer<output_alignment_store>(oa), res_);
     
     finished_ = true;
 }
@@ -1020,6 +1036,14 @@ void MainWidget::check_filenames() {
     }
     
 }
+
+qt_thread_guard::qt_thread_guard(QThread* thread) : thread_(thread) {}
+
+qt_thread_guard::~qt_thread_guard() {
+    thread_->quit();
+    thread_->wait();
+}
+
 
 // bg_align_worker::bg_align_worker( const papara_state *state, QThread* thread) : state_(state) {
 //     moveToThread(thread);
