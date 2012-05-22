@@ -110,6 +110,19 @@ int main( int argc, char *argv[] ) {
     return a.exec();
 
 }
+
+#ifdef WIN32
+int CALLBACK WinMain(
+  __in  HINSTANCE hInstance,
+  __in  HINSTANCE hPrevInstance,
+  __in  LPSTR lpCmdLine,
+  __in  int nCmdShow
+)
+{
+	char *argv[1] = {"test"};
+	return main( 1, argv );
+}
+#endif
 LoadWizardPage::LoadWizardPage() : QWizardPage() {
     setTitle("Load Input Files");
     //page->setSubTitle("Please fill both fields.");
@@ -154,10 +167,6 @@ LoadWizardPage::LoadWizardPage() : QWizardPage() {
     
     fsRef->changeFilename( "C:/2012_robert_454/cora_Sanger_reference_alignment.phy" );
     fsQuery->changeFilename( "C:/2012_robert_454/cluster_52_72_cora_inversa_squamiformis_DIC_148_149.fas" );
-    
-    tree_filename_ = ;
-    ref_filename_ = ;
-    qs_filename_ = "C:/2012_robert_454/cluster_52_72_cora_inversa_squamiformis_DIC_148_149.fas";
 #endif
     
     setLayout(layout);

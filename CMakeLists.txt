@@ -79,7 +79,7 @@ INCLUDE_DIRECTORIES( ${CMAKE_BINARY_DIR} )
 
 # here we instruct CMake to build "sample" executable from all of the source files
 
-add_executable( test main.cpp main_widget.cpp TextGrid.cpp FileSelector.cpp ${SAMPLE_MOC_SRCS} ${SAMPLE_UI_HDRS})
+add_executable( test WIN32 main.cpp main_widget.cpp TextGrid.cpp FileSelector.cpp ${SAMPLE_MOC_SRCS} ${SAMPLE_UI_HDRS})
 add_executable( largali largali_main.cpp large_ali.cpp TextGrid.cpp ${LARGALI_MOC_SRCS} ${LARGALI_UI_HDRS})
 
 

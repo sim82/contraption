@@ -23,10 +23,15 @@ TextGrid::TextGrid(QWidget* w, int zoom_factor, QSize cell_size )
     
     setFont(f);
     
-    QFontMetrics metrics =fontMetrics();
-    int fmw = metrics.maxWidth();
-    int fmh = metrics.ascent();
+    QFontMetrics metrics = fontMetrics();
+
+	QRect max_rect = metrics.boundingRect( 'M' );
+    //int fmw = metrics.maxWidth();
+    //int fmh = metrics.ascent();
     
+	int fmw = max_rect.width() + 2;
+    int fmh = metrics.height() + 2;
+
     cell_size_ = QSize(fmw,fmh);
     
     for( char c = 0; c < std::numeric_limits<char>::max(); ++c ) {
@@ -108,9 +113,11 @@ void TextGrid::paintEvent(QPaintEvent* e) {
         float fw = r.width() / float(zsizef.width());
         float fh = r.height() / float(zsizef.height());
         
-        const float tmin = 7;
-        const float tmax = 9;
-        
+        //const float tmin = 7;
+        //const float tmax = 9;
+		const float tmax = cell_size_.width() - 2;
+		const float tmin = cell_size_.width() - 4;
+
         int lighten = -1;
         bool set_tcol = false;
         bool show_text = true;
@@ -134,7 +141,7 @@ void TextGrid::paintEvent(QPaintEvent* e) {
             
             lighten = 100 + td * 50;
         }
-        
+        const QPoint text_offset( 1, 1 );
         for( int y = yfirst; y <= ylast; ++y ) {
             for( int x = xfirst; x <= xlast; ++x ) {
                 
@@ -161,7 +168,8 @@ void TextGrid::paintEvent(QPaintEvent* e) {
                         p.setPen(tcol);
                     }
                     //                     p.setBrush(QBrush(tcol));
-                    p.drawStaticText(drf.topLeft(), stext_.at(size_t(c.toAscii())));   
+					
+                    p.drawStaticText(drf.topLeft() + text_offset, stext_.at(size_t(c.toAscii())));   
 //                     p.drawText(drf.topLeft(), c );   
                 
                 }
