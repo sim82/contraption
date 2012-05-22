@@ -87,7 +87,7 @@ private:
     
     TextGridModel *model_;
     QSize model_size_;
-    const QSize cell_size_; // base cell size
+    QSize cell_size_; // base cell size
     int zoom_factor_;
     
     std::vector<QStaticText> stext_;

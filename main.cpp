@@ -3,12 +3,16 @@
 #include <QPlainTextEdit>
 #include <QScrollArea>
 
-
+#include <QWizard>
+#include <QLabel>
+#include <QGridLayout>
+#include <QLineEdit>
 #include <iostream>
+#include "main.h"
 #include "papara_nt/papara.h"
 #include "main_widget.h"
 #include "TextGrid.h"
-
+#include "FileSelector.h"
 
 // class TestModel : public TextGridModel {
 // public:
@@ -58,11 +62,31 @@ private:
     
 };
 
+
 int main( int argc, char *argv[] ) {
 
 
     QApplication a(argc, argv);
-    MainWidget w;
+    
+    QWizard wizard;
+
+    LoadWizardPage *loadPage = new LoadWizardPage;
+    
+    
+    wizard.addPage(loadPage);
+    wizard.setModal(true);
+    int res = wizard.exec();
+    
+    if( res == 0 ) {
+        return -1;
+    }
+    QString treeName = loadPage->getTree();
+    QString refName = loadPage->getRef();
+    QString queryName = loadPage->getQuery();
+  
+//     std::cout << "tree: " << treeName.toStdString() << "\n";
+    
+    MainWidget w( treeName, refName, queryName );
 
 //     if(false) {
 //         TestModel tm;
@@ -85,4 +109,70 @@ int main( int argc, char *argv[] ) {
     
     return a.exec();
 
+}
+LoadWizardPage::LoadWizardPage() : QWizardPage() {
+    setTitle("Load Input Files");
+    //page->setSubTitle("Please fill both fields.");
+
+    QLabel *nameLabel = new QLabel("Name:");
+    QLineEdit *nameLineEdit = new QLineEdit;
+
+    QLabel *emailLabel = new QLabel("Email address:");
+    QLineEdit *emailLineEdit = new QLineEdit;
+
+    QLabel *laTree = new QLabel( "Reference Tree" );
+    fsTree = new FileSelector;
+
+    QLabel *laRef = new QLabel( "Reference Alignment" );
+    fsRef = new FileSelector;
+
+    QLabel *laQuery = new QLabel( "Query Sequences" );
+    fsQuery = new FileSelector;
+
+
+    QGridLayout *layout = new QGridLayout;
+
+
+    layout->addWidget(laTree, 0, 0 );
+    layout->addWidget(fsTree, 0, 1 );
+
+    layout->addWidget(laRef, 1, 0 );
+    layout->addWidget(fsRef, 1, 1 );
+
+    layout->addWidget(laQuery, 2, 0 );
+    layout->addWidget(fsQuery, 2, 1 );
+
+    
+#ifndef WIN32
+    fsTree->changeFilename( "/space/projects/2012_robert_454/RAxML_bestTree.cora_Sanger_reference_alignment.tre" );
+    
+    fsRef->changeFilename( "/space/projects/2012_robert_454/cora_Sanger_reference_alignment.phy" );
+    fsQuery->changeFilename( "/space/projects/2012_robert_454/cluster_52_72_cora_inversa_squamiformis_DIC_148_149.fas" );
+    
+#else
+    fsTree->changeFilename( "C:/2012_robert_454/RAxML_bestTree.cora_Sanger_reference_alignment.tre" );
+    
+    fsRef->changeFilename( "C:/2012_robert_454/cora_Sanger_reference_alignment.phy" );
+    fsQuery->changeFilename( "C:/2012_robert_454/cluster_52_72_cora_inversa_squamiformis_DIC_148_149.fas" );
+    
+    tree_filename_ = ;
+    ref_filename_ = ;
+    qs_filename_ = "C:/2012_robert_454/cluster_52_72_cora_inversa_squamiformis_DIC_148_149.fas";
+#endif
+    
+    setLayout(layout);
+
+}
+QString LoadWizardPage::getTree() {
+    return fsTree->getFilename();
+}
+QString LoadWizardPage::getRef() {
+    return fsRef->getFilename();
+
+}
+QString LoadWizardPage::getQuery() {
+    return fsQuery->getFilename();
+}
+LoadWizardPage::~LoadWizardPage() {
+    std::cout << "~LoadWizardPage()\n";
 }

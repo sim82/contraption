@@ -19,9 +19,20 @@ TextGrid::TextGrid(QWidget* w, int zoom_factor, QSize cell_size )
    
 {
     f.setStyleHint(QFont::Monospace);
+    f.setPointSize(12);
+    
+    setFont(f);
+    
+    QFontMetrics metrics =fontMetrics();
+    int fmw = metrics.maxWidth();
+    int fmh = metrics.ascent();
+    
+    cell_size_ = QSize(fmw,fmh);
+    
     for( char c = 0; c < std::numeric_limits<char>::max(); ++c ) {
         if( isprint(c) ) {
             stext_.push_back( QStaticText(QChar(c)) );
+            
 //             stext_.back().
         } else {
             stext_.push_back( QStaticText() );

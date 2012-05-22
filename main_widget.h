@@ -194,7 +194,7 @@ class MainWidget : public QWidget
     Q_OBJECT
 
 public:
-    explicit MainWidget(QWidget *parent = 0);
+    explicit MainWidget(QString treeName, QString refName, QString queryName, QWidget *parent = 0);
     ~MainWidget();
 
     void post_show_stuff();

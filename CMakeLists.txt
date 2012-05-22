@@ -28,17 +28,20 @@ include_directories(${IVYMIKE_INCLUDE} papara_nt papara_nt/ublasJama-1.0.2.3 )
  # with SET() command you can change variables or define new ones
   # here we define SAMPLE_SRCS variable that contains a list of all .cpp files
   # note that we don't need \ at the end of line
-SET( SAMPLE_SRCS
-#        dialog.cpp
-       main_widget.cpp
-       TextGrid.cpp
-  )
+# SET( SAMPLE_SRCS
+# #        dialog.cpp
+#        main_widget.cpp
+#        TextGrid.cpp
+#        FileSelector.cpp
+#   )
 
   # another list, this time it includes all header files that should be treated with moc
   SET( SAMPLE_MOC_HDRS
 #        dialog.h
        main_widget.h
        TextGrid.h
+       FileSelector.h
+       main.h
   )
 
   # some .ui files
@@ -76,7 +79,7 @@ INCLUDE_DIRECTORIES( ${CMAKE_BINARY_DIR} )
 
 # here we instruct CMake to build "sample" executable from all of the source files
 
-add_executable( test main.cpp main_widget.cpp TextGrid.cpp ${SAMPLE_MOC_SRCS} ${SAMPLE_UI_HDRS})
+add_executable( test main.cpp main_widget.cpp TextGrid.cpp FileSelector.cpp ${SAMPLE_MOC_SRCS} ${SAMPLE_UI_HDRS})
 add_executable( largali largali_main.cpp large_ali.cpp TextGrid.cpp ${LARGALI_MOC_SRCS} ${LARGALI_UI_HDRS})
 
 

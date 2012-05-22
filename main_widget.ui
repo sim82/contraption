@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>854</width>
+    <width>1003</width>
     <height>646</height>
    </rect>
   </property>
@@ -22,8 +22,8 @@
      <property name="frameShadow">
       <enum>QFrame::Raised</enum>
      </property>
-     <layout class="QHBoxLayout" name="horizontalLayout">
-      <item>
+     <layout class="QGridLayout" name="gridLayout_2">
+      <item row="0" column="0" rowspan="3">
        <widget class="QSplitter" name="splitter">
         <property name="orientation">
          <enum>Qt::Vertical</enum>
@@ -53,7 +53,14 @@
         </widget>
        </widget>
       </item>
-      <item>
+      <item row="0" column="1">
+       <widget class="QLabel" name="label_5">
+        <property name="text">
+         <string>zoom</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
        <widget class="QSlider" name="slZoom">
         <property name="minimum">
          <number>10</number>
@@ -72,8 +79,109 @@
      </layout>
     </widget>
    </item>
+   <item row="1" column="2">
+    <widget class="QFrame" name="frRun">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
+     <property name="frameShape">
+      <enum>QFrame::NoFrame</enum>
+     </property>
+     <property name="frameShadow">
+      <enum>QFrame::Raised</enum>
+     </property>
+     <layout class="QHBoxLayout" name="horizontalLayout_2">
+      <item>
+       <widget class="QLabel" name="label">
+        <property name="text">
+         <string>open:</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QSpinBox" name="sbOpen">
+        <property name="minimum">
+         <number>-99</number>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="label_2">
+        <property name="text">
+         <string>ext:</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QSpinBox" name="sbExt">
+        <property name="minimum">
+         <number>-99</number>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="label_3">
+        <property name="text">
+         <string>match:</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QSpinBox" name="sbMatch">
+        <property name="minimum">
+         <number>-99</number>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="label_4">
+        <property name="text">
+         <string>cgap:</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QSpinBox" name="sbCgap">
+        <property name="minimum">
+         <number>-99</number>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QCheckBox" name="cbRefGaps">
+        <property name="text">
+         <string>RefGaps</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="pbRun">
+        <property name="text">
+         <string>run</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item row="1" column="1">
+    <spacer name="horizontalSpacer">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>40</width>
+       <height>20</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
    <item row="1" column="0">
     <widget class="QFrame" name="frButtons">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
      <property name="frameShape">
       <enum>QFrame::StyledPanel</enum>
      </property>
@@ -114,76 +222,6 @@
       </item>
      </layout>
     </widget>
-   </item>
-   <item row="1" column="2">
-    <widget class="QFrame" name="frRun">
-     <property name="enabled">
-      <bool>false</bool>
-     </property>
-     <property name="frameShape">
-      <enum>QFrame::StyledPanel</enum>
-     </property>
-     <property name="frameShadow">
-      <enum>QFrame::Raised</enum>
-     </property>
-     <layout class="QHBoxLayout" name="horizontalLayout_2">
-      <item>
-       <widget class="QSpinBox" name="sbOpen">
-        <property name="minimum">
-         <number>-99</number>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QSpinBox" name="sbExt">
-        <property name="minimum">
-         <number>-99</number>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QSpinBox" name="sbMatch">
-        <property name="minimum">
-         <number>-99</number>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QSpinBox" name="sbCgap">
-        <property name="minimum">
-         <number>-99</number>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QCheckBox" name="cbRefGaps">
-        <property name="text">
-         <string>RefGaps</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QPushButton" name="pbRun">
-        <property name="text">
-         <string>run</string>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </widget>
-   </item>
-   <item row="1" column="1">
-    <spacer name="horizontalSpacer">
-     <property name="orientation">
-      <enum>Qt::Horizontal</enum>
-     </property>
-     <property name="sizeHint" stdset="0">
-      <size>
-       <width>40</width>
-       <height>20</height>
-      </size>
-     </property>
-    </spacer>
    </item>
   </layout>
  </widget>

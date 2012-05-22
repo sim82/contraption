@@ -327,9 +327,22 @@ private:
     
 };
 
+// converting from QString to const char* is ridiculusly complicated. so store string as when conversion is necessary std::string...
+static std::string de_q_string( QString qs ) {
+    std::string s = qs.toStdString();
+
+    return s;
+}
 
 
-MainWidget::MainWidget(QWidget *parent) :
+static bool is_readable( std::string filename ) {
+    std::ifstream is( filename.c_str() );
+    
+    return is.good();
+}
+
+
+MainWidget::MainWidget(QString treeName, QString refName, QString queryName, QWidget* parent) :
     QWidget(parent),
     ui(new Ui::MainWidget),
     progress_dialog_(0),
@@ -345,7 +358,7 @@ MainWidget::MainWidget(QWidget *parent) :
     
     ui->setupUi(this);
 
-    
+    ui->frButtons->setVisible(false);
     ui->pbRun->setPalette(QPalette( Qt::red ));
     
     papara::papara_score_parameters sp = papara::papara_score_parameters::default_scores();
@@ -381,29 +394,46 @@ MainWidget::MainWidget(QWidget *parent) :
     
     // ui->tv_alignment->setModel( &table_model_ );
 
-#ifndef WIN32
-    if( false ) {
-        tree_filename_ = "/home/sim/src_exelixis/contraption/small.tree";
-        ref_filename_ = "/home/sim/src_exelixis/contraption/small.phy";
-        qs_filename_ = "/home/sim/src_exelixis/contraption/small_qs.fa";
-    } else if(false) {
-        tree_filename_ = "/home/sim/src_exelixis/contraption/test_1604/RAxML_bestTree.ref_orig";
-        ref_filename_ = "/home/sim/src_exelixis/contraption/test_1604/orig.phy.1";
-        qs_filename_ = "/home/sim/src_exelixis/contraption/test_1604/qs.fa.20";
-    } else {
-        tree_filename_ = "/space/projects/2012_robert_454/RAxML_bestTree.cora_Sanger_reference_alignment.tre";
-        ref_filename_ = "/space/projects/2012_robert_454/cora_Sanger_reference_alignment.phy";
-        qs_filename_ = "/space/projects/2012_robert_454/cluster_52_72_cora_inversa_squamiformis_DIC_148_149.fas";
-    }
-#else
-	tree_filename_ = "C:/2012_robert_454/RAxML_bestTree.cora_Sanger_reference_alignment.tre";
-	ref_filename_ = "C:/2012_robert_454/cora_Sanger_reference_alignment.phy";
-	qs_filename_ = "C:/2012_robert_454/cluster_52_72_cora_inversa_squamiformis_DIC_148_149.fas";
-#endif
+// #ifndef WIN32
+//     if( false ) {
+//         tree_filename_ = "/home/sim/src_exelixis/contraption/small.tree";
+//         ref_filename_ = "/home/sim/src_exelixis/contraption/small.phy";
+//         qs_filename_ = "/home/sim/src_exelixis/contraption/small_qs.fa";
+//     } else if(false) {
+//         tree_filename_ = "/home/sim/src_exelixis/contraption/test_1604/RAxML_bestTree.ref_orig";
+//         ref_filename_ = "/home/sim/src_exelixis/contraption/test_1604/orig.phy.1";
+//         qs_filename_ = "/home/sim/src_exelixis/contraption/test_1604/qs.fa.20";
+//     } else if( false ){
+//         tree_filename_ = "/space/projects/2012_robert_454/RAxML_bestTree.cora_Sanger_reference_alignment.tre";
+//         ref_filename_ = "/space/projects/2012_robert_454/cora_Sanger_reference_alignment.phy";
+//         qs_filename_ = "/space/projects/2012_robert_454/cluster_52_72_cora_inversa_squamiformis_DIC_148_149.fas";
+//     } else {
+//         tree_filename_ = "/space/projects/2012_robert_454/RAxML_bestTree.cora_Sanger_reference_alignment.tre";
+//         ref_filename_ = "/space/projects/2012_robert_454/cora_Sanger_reference_alignment.phy";
+//         qs_filename_ = "/space/projects/2012_robert_454/cluster_52_72_cora_inversa_squamiformis_DIC_148_149.fas";
+//     }
+// #else
+// 	tree_filename_ = "C:/2012_robert_454/RAxML_bestTree.cora_Sanger_reference_alignment.tre";
+// 	ref_filename_ = "C:/2012_robert_454/cora_Sanger_reference_alignment.phy";
+// 	qs_filename_ = "C:/2012_robert_454/cluster_52_72_cora_inversa_squamiformis_DIC_148_149.fas";
+// #endif
+//     
+    tree_filename_ = de_q_string( treeName );
+    ref_filename_ = de_q_string( refName );
+    qs_filename_ = de_q_string( queryName );
     
     check_filenames();
     
     bg_thread_->start();
+    
+    
+    if( is_readable( tree_filename_ ) && is_readable( ref_filename_ ) && is_readable( qs_filename_ ) ) {
+        on_pbLoad_clicked();
+    } else {
+        QMessageBox::critical(this, "Input Files not readable", "One or more of the input files are not readble.", QMessageBox::Abort );
+        
+        throw std::runtime_error( "bailing out\n" );
+    }
     
 }
 
@@ -419,13 +449,6 @@ void MainWidget::post_show_stuff() {
     
     old_sizes[2] = 0;
     ui->splitter->setSizes(old_sizes);   
-}
-
-// converting from QString to const char* is ridiculusly complicated. so store string as when conversion is necessary std::string...
-static std::string de_q_string( QString qs ) {
-    std::string s = qs.toStdString();
-
-    return s;
 }
 
 void MainWidget::on_pb_tree_clicked()
@@ -989,11 +1012,7 @@ void MainWidget::invalidateScores() {
     ui->pbRun->setAutoFillBackground(true);
     
 }
-static bool is_readable( std::string filename ) {
-    std::ifstream is( filename.c_str() );
-    
-    return is.good();
-}
+
 
 void MainWidget::check_filenames() { 
     if( is_readable( tree_filename_ ) && is_readable( ref_filename_ ) && is_readable( qs_filename_ ) ) {
