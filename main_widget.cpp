@@ -704,7 +704,7 @@ void MainWidget::on_scoring_done(QSharedPointer<output_alignment_store> oa, QSha
 //         int hs = -1;
 //         int vs = -1;
         if( tg_ref_ == 0 ) {
-            tg_ref_ = new TextGrid();
+            tg_ref_ = new TextGrid(sv_ref_);
             sv_ref_->setWidget(tg_ref_);
         }
         
@@ -721,7 +721,7 @@ void MainWidget::on_scoring_done(QSharedPointer<output_alignment_store> oa, QSha
     {
         
         if( tg_qs_ == 0 ) {
-            tg_qs_ = new TextGrid();
+            tg_qs_ = new TextGrid(sv_qs_);
             sv_qs_->setWidget(tg_qs_);
         }
         //tg_qs_->setModel(qs_model.data());

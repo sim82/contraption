@@ -3,6 +3,8 @@
 #include <QPaintEvent>
 #include <QStaticText>
 #include <QScrollArea>
+#include <QScrollBar>
+#include <QMessageBox>
 #include <limits>
 #include <cctype>
 #include <cmath>
@@ -13,8 +15,8 @@
 
 
 
-TextGrid::TextGrid(QWidget* w, int zoom_factor, QSize cell_size ) 
-   : QWidget(w), model_(0), cell_size_(cell_size), zoom_factor_(zoom_factor)
+TextGrid::TextGrid(QScrollArea* w, int zoom_factor, QSize cell_size ) 
+   : scroll_area_(w), QWidget(w), model_(0), cell_size_(cell_size), zoom_factor_(zoom_factor)
    
    
 {
@@ -219,9 +221,42 @@ void TextGrid::setModel(QSharedPointer<TextGridModel> model) {
 
 void TextGrid::setZoom( int factor ) {
     zoom_factor_ = factor;
-    
+	
+
+	float hs = -1; 
+	float vs = -1; 
+
+	QScrollArea *psa = parentScrollArea();
+
+	if( psa != 0 ) {
+
+		float h = parentScrollArea()->horizontalScrollBar()->value();
+		float v = parentScrollArea()->verticalScrollBar()->value();
+	
+		h += width() / 2;
+		v += height() / 2;
+
+		hs = float(h) / width();	
+		vs = float(v) / height();
+	}
+
+	
     updateSize();
-    
+
+
+	if( psa != 0 ) {
+		int hn = hs * width();
+		int vn = vs * height();
+		
+		hn -= width() / 2;
+		vn -= height() / 2;
+
+		parentScrollArea()->horizontalScrollBar()->setValue(hn);
+		parentScrollArea()->verticalScrollBar()->setValue(vn);
+	} else {
+		QMessageBox::critical( this, "no psa", "no psa" );
+	}
+	
 }
 
 
@@ -252,7 +287,7 @@ void TextGrid::wheelEvent( QWheelEvent *e ) {
     
     QScrollArea *psa = parentScrollArea();
     
-    if( psa != 0 ) {
+    if( false && psa != 0 ) {
         
         QPoint ppos = psa->mapToParent(e->pos());
         std::cout << xcell << " " << ycell << "\n";
@@ -265,9 +300,12 @@ void TextGrid::wheelEvent( QWheelEvent *e ) {
 //     this->
 }
 QScrollArea* TextGrid::parentScrollArea() {
-    QScrollArea *psv = dynamic_cast<QScrollArea*>(parent());
+   // QScrollArea *psv = dynamic_cast<QScrollArea*>(parent());
 
-    return psv;
+//	QMessageBox::information( this, "xxx", typeid(parent()).name() );
+
+    //return psv;
+	return scroll_area_;
 }
 TextGridModel::~TextGridModel() { std::cerr << "~TextGridModel" << std::endl; }
 // void TextGrid::mousePressEvent(QMouseEvent* e) {

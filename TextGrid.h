@@ -57,7 +57,7 @@ class TextGrid : public QWidget {
     };
     
 public:
-    TextGrid( QWidget* w = 0, int zoom_factor = 100, QSize cell_size = QSize( 11, 14 )) ; 
+    TextGrid( QScrollArea* w = 0, int zoom_factor = 100, QSize cell_size = QSize( 11, 14 )) ; 
     
     virtual ~TextGrid() {
         std::cout << "~TextGrid\n";
@@ -89,6 +89,7 @@ private:
     
     
     //TextGridModel *model_;
+	QScrollArea *scroll_area_;
     QSharedPointer<TextGridModel> model_;
     QSize model_size_;
     QSize cell_size_; // base cell size
