@@ -69,6 +69,7 @@ int main( int argc, char *argv[] ) {
     QApplication a(argc, argv);
     
     QWizard wizard;
+//     wizard.set
 
     LoadWizardPage *loadPage = new LoadWizardPage;
     
@@ -127,20 +128,14 @@ LoadWizardPage::LoadWizardPage() : QWizardPage() {
     setTitle("Load Input Files");
     //page->setSubTitle("Please fill both fields.");
 
-    QLabel *nameLabel = new QLabel("Name:");
-    QLineEdit *nameLineEdit = new QLineEdit;
-
-    QLabel *emailLabel = new QLabel("Email address:");
-    QLineEdit *emailLineEdit = new QLineEdit;
-
     QLabel *laTree = new QLabel( "Reference Tree" );
-    fsTree = new FileSelector;
+    fsTree = new FileSelector( new file_validator_newick );
 
     QLabel *laRef = new QLabel( "Reference Alignment" );
-    fsRef = new FileSelector;
+    fsRef = new FileSelector( new file_validator_phylip );
 
     QLabel *laQuery = new QLabel( "Query Sequences" );
-    fsQuery = new FileSelector;
+    fsQuery = new FileSelector( new file_validator_fasta );
 
 
     QGridLayout *layout = new QGridLayout;
@@ -183,5 +178,5 @@ QString LoadWizardPage::getQuery() {
     return fsQuery->getFilename();
 }
 LoadWizardPage::~LoadWizardPage() {
-    std::cout << "~LoadWizardPage()\n";
+//     std::cout << "~LoadWizardPage()\n";
 }

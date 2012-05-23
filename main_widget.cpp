@@ -113,6 +113,26 @@ public:
         return names_.at(refs_.at(idx)); 
     }
     
+    void write_phylip( const char *filename ) {
+        papara::output_alignment_phylip oa(filename);
+        size_t max_name_len = 0;
+        for( std::vector< std::string >::iterator it = names_.begin(), last = names_.end(); it != last; ++it ) {
+            max_name_len = std::max( max_name_len, it->size() );
+        }
+        max_name_len += 1;
+        
+        oa.set_max_name_length(max_name_len);
+        oa.set_size( names_.size(), seqs_.at(0).size() );
+        for( std::vector< size_t >::iterator it = refs_.begin(), last = refs_.end(); it != last; ++it ) {
+            oa.push_back( names_.at(*it), seqs_.at(*it), output_alignment::type_ref );
+        }
+        
+        for( std::vector< size_t >::iterator it = qs_.begin(), last = qs_.end(); it != last; ++it ) {
+            oa.push_back( names_.at(*it), seqs_.at(*it), output_alignment::type_qs );
+        }
+    }
+     
+    
 private:
     std::vector <std::string> names_;
     std::vector <out_seq> seqs_;
@@ -267,7 +287,7 @@ public:
     papara::scoring_results *do_scoring_only() const {
         ivy_mike::perf_timer t1;
         
-        const size_t num_threads = 2;
+        const size_t num_threads = 4;
         const size_t num_candidates = 1;
       //  papara::papara_score_parameters sp = papara::papara_score_parameters::default_scores();
         papara::scoring_results *res = new papara::scoring_results(qs_.size(), papara::scoring_results::candidates(num_candidates));
@@ -447,7 +467,18 @@ MainWidget::MainWidget(QString treeName, QString refName, QString queryName, QWi
 
 MainWidget::~MainWidget()
 {
-   
+    bg_thread_->quit();
+    bg_thread_->wait( 1000 );
+    if( !bg_thread_->isFinished() ) {
+        QMessageBox::critical(this, "Job Running", "A background job is still running. Need to do an unclean program exit, which might look like a crash..." );
+        
+        // give it one more chance in case it has shut down cleanly in the meantime
+        if( !bg_thread_->isFinished() ) { 
+            abort();
+        }
+        
+        //bg_thread_->terminate();
+    }
     
     delete ui;
 }
@@ -521,7 +552,7 @@ void MainWidget::on_pbLoad_clicked()
 //     thread->start();
 
     
-    connect(state_worker_.data(), SIGNAL(done( QSharedPointer<papara_state>)), this, SLOT(on_state_ready(QSharedPointer<papara_state>)));
+    connect(state_worker_.data(), SIGNAL(done( QSharedPointer<papara_state>, QString)), this, SLOT(on_state_ready(QSharedPointer<papara_state>, QString)));
 
     QMetaObject::invokeMethod(state_worker_.data(), "doWork", Qt::QueuedConnection);
     //obj will need to emit startWork() to get the work going.
@@ -587,7 +618,7 @@ void MainWidget::on_pbRun_clicked() {
     scoring_worker_->moveToThread(bg_thread_.data());
 //     thread->start();
     
-    connect(scoring_worker_.data(), SIGNAL(done( QSharedPointer<output_alignment_store>, QSharedPointer<papara::scoring_results>)), this, SLOT(on_scoring_done(QSharedPointer<output_alignment_store>, QSharedPointer<papara::scoring_results>)));
+    connect(scoring_worker_.data(), SIGNAL(done( QSharedPointer<output_alignment_store>, QSharedPointer<papara::scoring_results>, QString)), this, SLOT(on_scoring_done(QSharedPointer<output_alignment_store>, QSharedPointer<papara::scoring_results>, QString)));
     
     QMetaObject::invokeMethod(scoring_worker_.data(), "doWork", Qt::QueuedConnection);
     //obj will need to emit startWork() to get the work going.
@@ -595,9 +626,17 @@ void MainWidget::on_pbRun_clicked() {
     
 }
 
-void MainWidget::on_state_ready(QSharedPointer<papara_state> state) {
+void MainWidget::on_state_ready(QSharedPointer< papara_state > state, QString msg) {
     if( progress_dialog_ != 0 ) {
         delete progress_dialog_;
+    }
+    
+    std::cout << "state_ready: " << state.data() << "\n";
+    
+    if( state.isNull() ) {
+        QMessageBox::critical(this,"Internal Error", msg );
+               
+        abort();
     }
     
     papara_ = state;
@@ -631,14 +670,21 @@ void MainWidget::resize_rows_columns( QTableView *tv, int row_size, int column_s
     }
 }
 
-void MainWidget::on_scoring_done(QSharedPointer<output_alignment_store> oa, QSharedPointer<papara::scoring_results> res) {
+void MainWidget::on_scoring_done(QSharedPointer<output_alignment_store> oa, QSharedPointer<papara::scoring_results> res, QString msg ) {
     if( progress_dialog_ != 0 ) {
         delete progress_dialog_;
+    }
+    
+    if( oa.isNull() ) {
+        QMessageBox::critical(this,"Internal Error", msg );
+               
+        abort();
     }
     
     if( scoring_result_.isNull() ) {
         scoring_result_ = res;
     }
+    
     
     assert( scoring_result_.data() == res );
     
@@ -742,33 +788,54 @@ void MainWidget::on_scoring_done(QSharedPointer<output_alignment_store> oa, QSha
     ui->frButtons->setEnabled(true);
     ui->frRun->setEnabled(true);
     
+    ui->pbSaveAs->setEnabled(true);
+    
 }
 
 
 void state_worker::doWork()
 {
-    std::cout << "doWork\n";
-   papara_state *ps = new papara_state( qpte_, tree_.data(), ref_.data(), qs_.data());
-
-   ps->do_preprocessing();
-
-   emit done(QSharedPointer<papara_state>(ps));
-   
-   finished_ = true;
+    
+    try {
+        std::cout << "doWork\n";
+        papara_state *ps = new papara_state( qpte_, tree_.data(), ref_.data(), qs_.data());
+        
+        ps->do_preprocessing();
+        
+        emit done(QSharedPointer<papara_state>(ps), QString());
+        
+        finished_ = true;
+    } catch( std::runtime_error x ) {
+        QString error_text(x.what());
+        QString msg( "Critical error while loading input files:\n" );
+        msg += error_text;
+        
+        
+        emit done( QSharedPointer<papara_state>(), msg );
+    } 
 }
 
 void scoring_worker::doWork() {
-    if( res_.isNull() ) {
-        res_ = QSharedPointer<papara::scoring_results>(state_->do_scoring_only());
+    try {
+        
+        if( res_.isNull() ) {
+            res_ = QSharedPointer<papara::scoring_results>(state_->do_scoring_only());
+        }
+        
+        assert( res_ != 0 );
+        
+        output_alignment_store *oa = state_->do_scoring( *res_, ref_gaps_ );
+        
+        emit done(QSharedPointer<output_alignment_store>(oa), res_, QString());
+        
+        finished_ = true;
+    } catch( std::runtime_error x ) {
+        QString error_text(x.what());
+        QString msg( "Critical error during alignment:\n" );
+        msg += error_text;
+        
+        emit done(QSharedPointer<output_alignment_store>(), res_, msg);
     }
-    
-    assert( res_ != 0 );
-    
-    output_alignment_store *oa = state_->do_scoring( *res_, ref_gaps_ );
-    
-    emit done(QSharedPointer<output_alignment_store>(oa), res_);
-    
-    finished_ = true;
 }
 
 raw_alignment_table_model::raw_alignment_table_model(QObject *parent )
@@ -1042,6 +1109,28 @@ qt_thread_guard::qt_thread_guard(QThread* thread) : thread_(thread) {}
 qt_thread_guard::~qt_thread_guard() {
     thread_->quit();
     thread_->wait();
+}
+void MainWidget::on_pbSaveAs_clicked() {
+    if( output_alignment_.isNull() ) {
+        QMessageBox::critical( this, "Internal Error", "SaveAs requested with no valid output alignment" );
+        abort();
+    }
+    
+     QString filename = QFileDialog::getSaveFileName(this);
+     
+     
+     if( !filename.isEmpty() ) {
+//          std::ofstream os( filename.toStdString() );
+         
+         std::string t( filename.toStdString() );
+         
+         output_alignment_->write_phylip( t.c_str() );
+         
+     }
+    
+    
+    
+    
 }
 
 

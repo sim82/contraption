@@ -102,7 +102,7 @@ public:
 public Q_SLOTS:
     void doWork();
 Q_SIGNALS:
-    void done( QSharedPointer<papara_state> );
+    void done( QSharedPointer<papara_state>, QString );
 
 private:
 
@@ -140,7 +140,7 @@ public:
 public Q_SLOTS:
     void doWork();
 Q_SIGNALS:
-    void done( QSharedPointer<output_alignment_store>, QSharedPointer<papara::scoring_results> );
+    void done( QSharedPointer<output_alignment_store>, QSharedPointer<papara::scoring_results>, QString msg );
 
 private:
 
@@ -238,8 +238,8 @@ private Q_SLOTS:
     void on_pb_qs_clicked();
 
     
-    void on_state_ready(QSharedPointer< papara_state > state);
-    void on_scoring_done( QSharedPointer< output_alignment_store > oa, QSharedPointer< papara::scoring_results > res ) ;
+    void on_state_ready(QSharedPointer< papara_state > state, QString msg );
+    void on_scoring_done( QSharedPointer< output_alignment_store > oa, QSharedPointer< papara::scoring_results > res, QString msg ) ;
     void on_pbLoad_clicked();
     void on_pbRun_clicked() ;
     void on_cbRefGaps_stateChanged( int s ) ; 
@@ -250,6 +250,7 @@ private Q_SLOTS:
     void on_sbMatch_valueChanged( int v ) { invalidateScores(); }
     void on_sbCgap_valueChanged( int v ) { invalidateScores(); }
     
+    void on_pbSaveAs_clicked() ;
 private:
     void check_filenames() ;
     void invalidateScores() ;
