@@ -125,13 +125,15 @@ void TextGrid::paintEvent(QPaintEvent* e) {
         bool show_text = true;
         QColor tcol( Qt::black);
         
-        
+        int lighten_min = 130;
+	int lighten_max = 170; 
         if( zsizef.width() >= tmax ) {
-            lighten = 150;
+            lighten = lighten_max;
         } else if( zsizef.width() <= tmin ) {
             // nothing
             // lighten stays at -1 and will be ignored
             show_text = false;
+            lighten = lighten_min;
         } else {
             // transition
             
@@ -141,7 +143,7 @@ void TextGrid::paintEvent(QPaintEvent* e) {
             tcol.setAlphaF(td);
             set_tcol = true;
             
-            lighten = 100 + td * 50;
+            lighten = lighten_min + td * (lighten_max - lighten_min);
         }
         const QPoint text_offset( 1, 1 );
         for( int y = yfirst; y <= ylast; ++y ) {

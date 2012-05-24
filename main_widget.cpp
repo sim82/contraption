@@ -223,10 +223,11 @@ public:
             return QColor( 255, 0, 255 );
         }
         
+	QColor rcol;
         switch( c ) {
         case 'A':
             return QColor( 255, 0, 0 );
-        case 'C':
+        case 'C': 
             return QColor( 0, 255, 0 );
         case 'G':
             return QColor( 0, 0, 255 );
@@ -235,7 +236,6 @@ public:
         default:
             return Qt::white;
         }
-        
     }
 private:
     QSharedPointer<output_alignment_store> oas_;
