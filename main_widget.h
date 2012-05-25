@@ -91,7 +91,7 @@ class state_worker : public QObject
     Q_OBJECT
 
 public:
-    state_worker( QPlainTextEdit *qpte, const std::string &tree, const std::string &ref, const std::string &qs ) : qpte_(qpte), tree_(tree), ref_(ref), qs_(qs), finished_(false) {}
+    state_worker( QPlainTextEdit *qpte, const std::string &tree, const std::string &ref, const std::string &qs, bool is_protein ) : qpte_(qpte), tree_(tree), ref_(ref), qs_(qs), finished_(false), is_protein_(is_protein) {}
 
     virtual ~state_worker() { 
         std::cout << "~state_worker\n";
@@ -121,6 +121,7 @@ private:
     std::string qs_;
     
     bool finished_;
+    bool is_protein_;
 };
 
 
@@ -180,6 +181,7 @@ private:
 //     const papara_state *state_;
 // };
 
+#if 0
 class raw_alignment_table_model : public QAbstractTableModel
 {
      Q_OBJECT
@@ -214,13 +216,13 @@ private:
     const bool use_ref_;
     QVariant x_;
 };
-
+#endif
 class MainWidget : public QWidget
 {
     Q_OBJECT
 
 public:
-    explicit MainWidget(QString treeName, QString refName, QString queryName, QWidget *parent = 0);
+    explicit MainWidget(QString treeName, QString refName, QString queryName, bool is_protein, QWidget *parent = 0);
     ~MainWidget();
 
     void post_show_stuff();
@@ -252,6 +254,7 @@ private Q_SLOTS:
     
     void on_pbSaveAs_clicked() ;
 private:
+    void showLog( bool v );
     void check_filenames() ;
     void invalidateScores() ;
     
@@ -285,15 +288,17 @@ private:
     QSharedPointer<TextGridModel> qs_grid_model_;
     
     
-    raw_alignment_table_model table_model_;
-    alignment_table_model qs_table_model_;
-    alignment_table_model ref_table_model_;
+//     raw_alignment_table_model table_model_;
+//     alignment_table_model qs_table_model_;
+//     alignment_table_model ref_table_model_;
     
 //     QThread bg_aligner_thread_;
     
     std::string tree_filename_;
     std::string ref_filename_;
     std::string qs_filename_;
+    const bool is_protein_;
+    int log_size_;
 };
 
 #endif // DIALOG_H

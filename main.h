@@ -5,6 +5,7 @@
 
 class QLabel;
 class QLineEdit;
+class QCheckBox;
 class FileSelector;
 
 class LoadWizardPage : public QWizardPage {
@@ -17,11 +18,13 @@ public:
     QString getRef() ;
     
     QString getQuery() ;
+    bool isProtein();
     
 private:
     FileSelector *fsTree;
     FileSelector *fsRef;
     FileSelector *fsQuery;
+    QCheckBox *cbProtein;
 };
 
 

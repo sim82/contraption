@@ -21,6 +21,7 @@ streambuf_to_q_plain_text_edit::streambuf_to_q_plain_text_edit( QPlainTextEdit *
 {
 
     QObject::connect( this, SIGNAL(post_text(QString)), qpte, SLOT(insertPlainText(const QString &)), Qt::QueuedConnection );
+    QObject::connect( this, SIGNAL(post_text(QString)), qpte, SLOT(centerCursor()), Qt::QueuedConnection );
 }
 
 
@@ -243,10 +244,29 @@ private:
 };
 
 
+
+
 class papara_state {
 public:
+    virtual ~papara_state() {}
+    
+    virtual void set_scoring_parameters( const papara::papara_score_parameters &sp ) = 0;
+    virtual void do_preprocessing() = 0;
+    virtual papara::scoring_results *do_scoring_only() const = 0;    
+    virtual output_alignment_store *do_scoring( const papara::scoring_results &res, bool ref_gaps ) const = 0;
+    
+//     virtual void align_single(size_t qs_idx) = 0;
+    
+    virtual papara::papara_score_parameters scoring_parameters() = 0;
+    
+};
 
-    papara_state( QPlainTextEdit *qpte_dont_use_me, const std::string &tree_name, const std::string &ref_name, const std::string &qs_name )
+
+template<typename seq_tag>
+class papara_state_impl : public papara_state {
+public:
+
+    papara_state_impl( QPlainTextEdit *qpte_dont_use_me, const std::string &tree_name, const std::string &ref_name, const std::string &qs_name )
         : sbq_(qpte_dont_use_me),
           log_file_( "contraption_log.txt"),
           ost_( &sbq_ ),
@@ -263,11 +283,11 @@ public:
 //        papara::lout << "bla bla bla" << std::endl;
     }
 
-    void set_scoring_parameters( const papara::papara_score_parameters &sp ) {
+    virtual void set_scoring_parameters( const papara::papara_score_parameters &sp ) {
         scoring_parameters_ = sp;
     }
     
-    void do_preprocessing() {
+    virtual void do_preprocessing() {
 
         papara::lout << "qs preprocess" << std::endl;
         qs_.preprocess();
@@ -284,7 +304,7 @@ public:
 //         
     }
 
-    papara::scoring_results *do_scoring_only() const {
+    virtual papara::scoring_results *do_scoring_only() const {
         ivy_mike::perf_timer t1;
         
         const size_t num_threads = 4;
@@ -294,7 +314,7 @@ public:
         
         
         scoring_parameters_.print(std::cerr);
-        papara::driver<pvec_pgap,papara::tag_dna>::calc_scores(num_threads, refs_, qs_, res, scoring_parameters_ );
+        papara::driver<pvec_pgap,seq_tag>::calc_scores(num_threads, refs_, qs_, res, scoring_parameters_ );
         
         t1.add_int();
         t1.print( );//papara::lout );
@@ -302,15 +322,15 @@ public:
         return res;
     }
     
-    output_alignment_store *do_scoring( const papara::scoring_results &res, bool ref_gaps ) const {        
+    virtual output_alignment_store *do_scoring( const papara::scoring_results &res, bool ref_gaps ) const {        
         ivy_mike::perf_timer t1;
         
         QScopedPointer<output_alignment_store> oas(new output_alignment_store);
         
         //papara::papara_score_parameters sp = papara::papara_score_parameters::default_scores();
-        
+        papara::lout << "aligning best scoring QS\n";
         scoring_parameters_.print(std::cerr);
-        papara::driver<pvec_pgap,papara::tag_dna>::align_best_scores_oa( oas.data(), qs_, refs_, res, size_t(0), ref_gaps, scoring_parameters_ );
+        papara::driver<pvec_pgap,seq_tag>::align_best_scores_oa( oas.data(), qs_, refs_, res, size_t(0), ref_gaps, scoring_parameters_ );
  
         t1.add_int();
         t1.print();//papara::lout);
@@ -318,16 +338,16 @@ public:
         return oas.take();
     }
     
-    virtual ~papara_state() { std::cout << "~papara_state\n"; }
+    virtual ~papara_state_impl() { std::cout << "~papara_state_impl\n"; }
 
 
 
-    const papara::references<pvec_pgap,papara::tag_dna> &refs() const {
-        return refs_;
-    }
-    void align_single(size_t qs_idx);
+//     const papara::references<pvec_pgap,papara::tag_dna> &refs() const {
+//         return refs_;
+//     }
+//     void align_single(size_t qs_idx);
     
-    papara::papara_score_parameters scoring_parameters() {
+    virtual papara::papara_score_parameters scoring_parameters() {
         return scoring_parameters_;
     }
 private:
@@ -341,9 +361,9 @@ private:
     papara::log_device ldev;
     papara::log_stream_guard lout_guard;
 
-    papara_state();
-    papara::queries<papara::tag_dna> qs_;
-    papara::references<pvec_pgap,papara::tag_dna> refs_;
+    papara_state_impl();
+    papara::queries<seq_tag> qs_;
+    papara::references<pvec_pgap,seq_tag> refs_;
     
     papara::papara_score_parameters scoring_parameters_;
     
@@ -364,16 +384,18 @@ static bool is_readable( std::string filename ) {
 }
 
 
-MainWidget::MainWidget(QString treeName, QString refName, QString queryName, QWidget* parent) :
+MainWidget::MainWidget(QString treeName, QString refName, QString queryName, bool is_protein, QWidget* parent) :
     QWidget(parent),
     ui(new Ui::MainWidget),
     progress_dialog_(0),
     bg_thread_(new QThread()),
     tg_ref_(0),
     tg_qs_(0),
-    table_model_(0),
-    qs_table_model_(0),
-    ref_table_model_(0,true)
+    is_protein_(is_protein),
+    log_size_(0)
+//     table_model_(0),
+//     qs_table_model_(0),
+//     ref_table_model_(0,true)
     
 {
     
@@ -450,18 +472,14 @@ MainWidget::MainWidget(QString treeName, QString refName, QString queryName, QWi
     ref_filename_ = de_q_string( refName );
     qs_filename_ = de_q_string( queryName );
     
+    
+    
     check_filenames();
     
     bg_thread_->start();
     
     
-    if( is_readable( tree_filename_ ) && is_readable( ref_filename_ ) && is_readable( qs_filename_ ) ) {
-        on_pbLoad_clicked();
-    } else {
-        QMessageBox::critical(this, "Input Files not readable", "One or more of the input files are not readble.", QMessageBox::Abort );
-        
-        throw std::runtime_error( "bailing out\n" );
-    }
+    
     
 }
 
@@ -483,13 +501,38 @@ MainWidget::~MainWidget()
     delete ui;
 }
 
-void MainWidget::post_show_stuff() {
-    QList<int> old_sizes = ui->splitter->sizes();
-    assert( old_sizes.size() == 3 );
-    std::cout << "sizes: " << old_sizes[0] << " " << old_sizes[1] << " " << old_sizes[2] << "\n";
+void MainWidget::showLog( bool v ) {
+//     return;
+    if( !v ) {
+        QList<int> old_sizes = ui->splitter->sizes();
+        assert( old_sizes.size() == 3 );
+        std::cout << "sizes: " << old_sizes[0] << " " << old_sizes[1] << " " << old_sizes[2] << "\n";
     
-    old_sizes[2] = 0;
-    ui->splitter->setSizes(old_sizes);   
+
+        log_size_ = old_sizes[2];
+        old_sizes[2] = 0;
+        ui->splitter->setSizes(old_sizes);
+    } else {
+        QList<int> old_sizes = ui->splitter->sizes();
+        assert( old_sizes.size() == 3 );
+        std::cout << "sizes: " << old_sizes[0] << " " << old_sizes[1] << " " << old_sizes[2] << "\n";
+    
+//     old_sizes[2] = 0;
+        old_sizes[2] = log_size_;
+        ui->splitter->setSizes(old_sizes);
+    }
+}
+
+void MainWidget::post_show_stuff() {
+    showLog(false);
+    
+    if( is_readable( tree_filename_ ) && is_readable( ref_filename_ ) && is_readable( qs_filename_ ) ) {
+        on_pbLoad_clicked();
+    } else {
+        QMessageBox::critical(this, "Input Files not readable", "One or more of the input files are not readble.", QMessageBox::Abort );
+        
+        throw std::runtime_error( "bailing out\n" );
+    }
 }
 
 void MainWidget::on_pb_tree_clicked()
@@ -530,8 +573,8 @@ void MainWidget::on_pbLoad_clicked()
         return;
     }
 
-
-    
+//     ui->pte_log->setVisible( true );
+    showLog(true);
     progress_dialog_ = new QProgressDialog( "Initializing papara static data", "cancel (not really)", 0, 1 );
 //    QProgressDialog *pd = new QProgressDialog( "Initializing papara static data", "cancel (not really)", 0, 1 );
 //    pd->show();
@@ -544,7 +587,7 @@ void MainWidget::on_pbLoad_clicked()
    // QThread *thread = new QThread;
     
     
-    state_worker_.reset( new state_worker( ui->pte_log, tree_filename_, ref_filename_, qs_filename_ ));
+    state_worker_.reset( new state_worker( ui->pte_log, tree_filename_, ref_filename_, qs_filename_, is_protein_ ));
     //obj is a pointer to a QObject that will trigger the work to start. It could just be this
 
     assert( bg_thread_->isRunning() );
@@ -563,7 +606,8 @@ void MainWidget::on_pbLoad_clicked()
 void MainWidget::on_pbRun_clicked() {
     //setEnabled(false);
     
-    
+    //ui->pte_log->setVisible(true);
+    showLog(true);
     
     int sopen = ui->sbOpen->value();
     int sext = ui->sbExt->value();
@@ -652,9 +696,11 @@ void MainWidget::on_state_ready(QSharedPointer< papara_state > state, QString ms
 //     resize_rows_columns(ui->tv_alignment, 12, 12 );
     setEnabled(true);
     
-    ui->pte_log->appendPlainText("papara static state initialized");
+    ui->pte_log->appendPlainText("papara static state initialized\n");
     
     ui->frRun->setEnabled(true);
+    //ui->pte_log->setVisible(false);
+    showLog(false);
 }
 
 void MainWidget::resize_rows_columns( QTableView *tv, int row_size, int column_size ) {
@@ -789,8 +835,10 @@ void MainWidget::on_scoring_done(QSharedPointer<output_alignment_store> oa, QSha
     ui->frRun->setEnabled(true);
     
     ui->pbSaveAs->setEnabled(true);
-    
+    //ui->pte_log->setVisible(false);
+    showLog(false);
 }
+
 
 
 void state_worker::doWork()
@@ -798,8 +846,13 @@ void state_worker::doWork()
     
     try {
         std::cout << "doWork\n";
-        papara_state *ps = new papara_state( qpte_, tree_.data(), ref_.data(), qs_.data());
+        papara_state *ps;
         
+        if( is_protein_ ) {
+            ps = new papara_state_impl<papara::tag_aa>( qpte_, tree_, ref_, qs_);
+        } else {
+            ps = new papara_state_impl<papara::tag_dna>( qpte_, tree_, ref_, qs_);   
+        }
         ps->do_preprocessing();
         
         emit done(QSharedPointer<papara_state>(ps), QString());
@@ -838,6 +891,7 @@ void scoring_worker::doWork() {
     }
 }
 
+#if 0
 raw_alignment_table_model::raw_alignment_table_model(QObject *parent )
 : papara_state_(0)
 {
@@ -1068,6 +1122,7 @@ QVariant alignment_table_model::headerData(int section, Qt::Orientation orientat
     }
 
 }
+#endif
 
 void MainWidget::on_cbRefGaps_stateChanged(int s) {
     

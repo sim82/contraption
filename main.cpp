@@ -7,6 +7,7 @@
 #include <QLabel>
 #include <QGridLayout>
 #include <QLineEdit>
+#include <QCheckBox>
 #include <iostream>
 #include "main.h"
 #include "papara_nt/papara.h"
@@ -84,10 +85,11 @@ int main( int argc, char *argv[] ) {
     QString treeName = loadPage->getTree();
     QString refName = loadPage->getRef();
     QString queryName = loadPage->getQuery();
-  
+    bool is_protein = loadPage->isProtein();
+    
 //     std::cout << "tree: " << treeName.toStdString() << "\n";
     
-    MainWidget w( treeName, refName, queryName );
+    MainWidget w( treeName, refName, queryName, is_protein );
 
 //     if(false) {
 //         TestModel tm;
@@ -138,6 +140,10 @@ LoadWizardPage::LoadWizardPage() : QWizardPage() {
     fsQuery = new FileSelector( new file_validator_fasta );
 
 
+    QLabel *laProtein = new QLabel( "Protein Data:" );
+    //fsQuery = new FileSelector( new file_validator_fasta );
+    cbProtein = new QCheckBox();
+    
     QGridLayout *layout = new QGridLayout;
 
 
@@ -150,6 +156,8 @@ LoadWizardPage::LoadWizardPage() : QWizardPage() {
     layout->addWidget(laQuery, 2, 0 );
     layout->addWidget(fsQuery, 2, 1 );
 
+    layout->addWidget(laProtein, 3, 0);
+    layout->addWidget(cbProtein, 3, 1);
     
 #ifndef WIN32
     fsTree->changeFilename( "/space/projects/2012_robert_454/RAxML_bestTree.cora_Sanger_reference_alignment.tre" );
@@ -177,6 +185,11 @@ QString LoadWizardPage::getRef() {
 QString LoadWizardPage::getQuery() {
     return fsQuery->getFilename();
 }
+
+bool LoadWizardPage::isProtein() {
+    return cbProtein->isChecked();
+}
+
 LoadWizardPage::~LoadWizardPage() {
 //     std::cout << "~LoadWizardPage()\n";
 }
