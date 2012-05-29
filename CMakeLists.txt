@@ -83,5 +83,5 @@ add_executable( test WIN32 main.cpp main_widget.cpp TextGrid.cpp FileSelector.cp
 add_executable( largali largali_main.cpp large_ali.cpp TextGrid.cpp ${LARGALI_MOC_SRCS} ${LARGALI_UI_HDRS})
 
 
-target_link_libraries(test ${QT_LIBRARIES} papara_core ivymike ublas_jama )
+target_link_libraries(test ${QT_LIBRARIES} papara_core ivymike ublas_jama pthread )
 target_link_libraries(largali ${QT_LIBRARIES} ivymike ublas_jama )
