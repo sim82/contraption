@@ -107,6 +107,6 @@ add_executable( epa_viewer epa_viewer_main.cpp EPAViewerWidget.cpp PhyloTreeView
 
 
 
-target_link_libraries(test ${QT_LIBRARIES} papara_core ivymike ublas_jama pthread )
+target_link_libraries(test ${QT_LIBRARIES} papara_core ivymike ublas_jama  )
 target_link_libraries(largali ${QT_LIBRARIES} ivymike ublas_jama )
 target_link_libraries(epa_viewer ${QT_LIBRARIES} ivymike ublas_jama )
