@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 2.8)
 add_subdirectory(ivy_mike)
 add_subdirectory(papara_nt)
 
-find_package(Qt4 4.4.3 REQUIRED QtCore QtGui QtXml)
+find_package(Qt4 4.4.3 REQUIRED QtCore QtGui QtScript )
 include(${QT_USE_FILE})
 
 
@@ -41,6 +41,7 @@ include_directories(${IVYMIKE_INCLUDE} papara_nt papara_nt/ublasJama-1.0.2.3 )
        main_widget.h
        TextGrid.h
        FileSelector.h
+       PhyloTreeView.h
        main.h
   )
 
@@ -65,23 +66,47 @@ set( LARGALI_MOC_HDRS
 	TextGrid.h
 	)
 
+
+set( EPA_VIEWER_SRCS
+        EPAViewerWidget.cpp
+        PhyloTreeView.cpp
+        )
+
+set( EPA_VIEWER_UIS
+    epa_viewer_widget.ui
+        )
+
+set( EPA_VIEWER_MOC_HDRS
+    EPAViewerWidget.h
+    PhyloTreeView.h
+)
+
 # this will run uic on .ui files:
 QT4_WRAP_UI( SAMPLE_UI_HDRS ${SAMPLE_UIS} )
 QT4_WRAP_UI( LARGALI_UI_HDRS ${LARGALI_UIS} )
+QT4_WRAP_UI( EPA_VIEWER_UI_HDRS ${EPA_VIEWER_UIS} )
+
+
 
 # and finally this will run moc:
 QT4_WRAP_CPP( SAMPLE_MOC_SRCS ${SAMPLE_MOC_HDRS} )
-
 QT4_WRAP_CPP( LARGALI_MOC_SRCS ${LARGALI_MOC_HDRS} )
+QT4_WRAP_CPP( EPA_VIEWER_MOC_SRCS ${EPA_VIEWER_MOC_HDRS} )
+
+
 # we need this to be able to include headers produced by uic in our code
 # (CMAKE_BINARY_DIR holds a path to the build directory, while INCLUDE_DIRECTORIES() works just like INCLUDEPATH from qmake)
 INCLUDE_DIRECTORIES( ${CMAKE_BINARY_DIR} )
 
 # here we instruct CMake to build "sample" executable from all of the source files
 
-add_executable( test WIN32 main.cpp main_widget.cpp TextGrid.cpp FileSelector.cpp ${SAMPLE_MOC_SRCS} ${SAMPLE_UI_HDRS})
+add_executable( test WIN32 main.cpp main_widget.cpp TextGrid.cpp FileSelector.cpp PhyloTreeView.cpp ${SAMPLE_MOC_SRCS} ${SAMPLE_UI_HDRS})
 add_executable( largali largali_main.cpp large_ali.cpp TextGrid.cpp ${LARGALI_MOC_SRCS} ${LARGALI_UI_HDRS})
 
+add_executable( epa_viewer epa_viewer_main.cpp EPAViewerWidget.cpp PhyloTreeView.cpp ${EPA_VIEWER_MOC_SRCS} ${EPA_VIEWER_UI_HDRS})
 
-target_link_libraries(test ${QT_LIBRARIES} papara_core ivymike ublas_jama )
+
+
+target_link_libraries(test ${QT_LIBRARIES} papara_core ivymike ublas_jama pthread )
 target_link_libraries(largali ${QT_LIBRARIES} ivymike ublas_jama )
+target_link_libraries(epa_viewer ${QT_LIBRARIES} ivymike ublas_jama )

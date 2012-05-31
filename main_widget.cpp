@@ -1,7 +1,28 @@
+/*
+ * Copyright (C) 2009-2012 Simon A. Berger
+ * 
+ * This file is part of visual_papara.
+ * 
+ *  visual_papara is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  visual_papara is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with visual_papara.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+
 #include "papara.h"
 
 #include "main_widget.h"
 #include "ui_main_widget.h"
+
 #include <QFileDialog>
 #include <QProgressDialog>
 #include <QThread>
@@ -9,6 +30,9 @@
 #include <QTableView>
 #include <QScrollBar>
 #include <QMessageBox>
+#include <QGraphicsView>
+#include <QGraphicsScene>
+
 #include "ivymike/time.h"
 
 
@@ -38,7 +62,7 @@ void streambuf_to_q_plain_text_edit::append( int of, char *first, char *last ) {
     s.append(ba);
 
     if( of > 0 ) {
-        const char b[2] = {of, 0};
+        const char b[2] = {char(of), '\0'};
         s.append( b );
     }
     
@@ -307,8 +331,11 @@ public:
     virtual papara::scoring_results *do_scoring_only() const {
         ivy_mike::perf_timer t1;
         
-        const size_t num_threads = 4;
+        const size_t num_threads = QThread::idealThreadCount();
         const size_t num_candidates = 1;
+        
+        
+        
       //  papara::papara_score_parameters sp = papara::papara_score_parameters::default_scores();
         papara::scoring_results *res = new papara::scoring_results(qs_.size(), papara::scoring_results::candidates(num_candidates));
         
@@ -350,6 +377,12 @@ public:
     virtual papara::papara_score_parameters scoring_parameters() {
         return scoring_parameters_;
     }
+    
+    sptr::shared_ptr<ivy_mike::tree_parser_ms::lnode> tree() const {
+        return refs_.tree();
+        
+    }
+    
 private:
 
     streambuf_to_q_plain_text_edit sbq_;
@@ -701,6 +734,18 @@ void MainWidget::on_state_ready(QSharedPointer< papara_state > state, QString ms
     ui->frRun->setEnabled(true);
     //ui->pte_log->setVisible(false);
     showLog(false);
+
+    QScrollArea *qs = new QScrollArea();
+    
+    
+    PhyloTreeView *ptv = new PhyloTreeView(papara_->tree());
+    
+    QGraphicsView *gv = new QGraphicsView( ptv->initGraphicsScene(0) );
+    
+    qs->setWidget(gv);
+    
+    qs->setVisible(true);
+    
 }
 
 void MainWidget::resize_rows_columns( QTableView *tv, int row_size, int column_size ) {
