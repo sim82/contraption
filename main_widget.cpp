@@ -282,7 +282,7 @@ public:
 //     virtual void align_single(size_t qs_idx) = 0;
     
     virtual papara::papara_score_parameters scoring_parameters() = 0;
-    
+    virtual sptr::shared_ptr<ivy_mike::tree_parser_ms::lnode> tree() const = 0;    
 };
 
 
