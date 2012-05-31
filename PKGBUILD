@@ -5,10 +5,10 @@ pkgrel=1
 pkgdesc="GUI frontend for PaPaRa 2.0 sequence alignment program."
 arch=('i686' 'x86_64')
 url="http://exelixis-lab.org"
-license=('GPL')
+license=('GPL' 'LGPL')
 groups=()
-depends=(qt boost)
-makedepends=(git cmake)
+depends=(qt)
+makedepends=(git cmake boost)
 provides=(visual_papara)
 conflicts=(visual_papara)
 replaces=()
@@ -30,11 +30,18 @@ build() {
     cd "$_gitname" && git pull origin
     msg "The local files are updated."
   else
-    git clone "$_gitroot" "$_gitname"
+    git clone --depth=1 "$_gitroot" "$_gitname"
     cd $_gitname
     sh ro_submodules.sh
 
     git submodule init
+
+    # pre-checkout submodules with shallow history
+    for i in $(git submodule | sed -e 's/.* //'); do
+      _spath=$(git config -f .gitmodules --get submodule.$i.path)
+      _surl=$(git config -f .gitmodules --get submodule.$i.url)
+      git clone --depth 10 $_surl $_spath
+    done
 
     mkdir build
   fi

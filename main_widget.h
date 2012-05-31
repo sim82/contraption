@@ -30,6 +30,8 @@
 #include <cassert>
 #include <deque>
 #include "TextGrid.h"
+#include "PhyloTreeView.h"
+
 
 class QPlainTextEdit;
 class QProgressDialog;
