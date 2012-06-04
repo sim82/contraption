@@ -149,6 +149,7 @@ void TextGrid::paintEvent(QPaintEvent* e) {
 	int lighten_max = 170; 
         if( zsizef.width() >= tmax ) {
             lighten = lighten_max;
+            set_tcol = true;
         } else if( zsizef.width() <= tmin ) {
             // nothing
             // lighten stays at -1 and will be ignored
