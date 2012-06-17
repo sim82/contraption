@@ -20,6 +20,7 @@
 
 #include <QApplication>
 #include <QFileDialog>
+#include <QDir>
 #include "EPAViewerWidget.h"
 #include "PhyloTreeView.h"
 
@@ -28,8 +29,16 @@
 int main( int argc, char *argv[] ) {
     
     QApplication app(argc, argv);
-        
-    std::string filename = QFileDialog::getOpenFileName(0,0,"/space/projects/2011_12_micah", "*.jplace").toStdString();
+     
+    const char *start_path = "/space/projects/2011_12_micah";
+    
+    QDir xdir( start_path );
+    
+    if( !xdir.exists(start_path) ) {
+        start_path = "";
+    }
+    
+    std::string filename = QFileDialog::getOpenFileName(0,0,start_path, "*.jplace").toStdString();
     
     
     if( filename.empty() ) {
