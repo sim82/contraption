@@ -149,6 +149,7 @@ EPAViewerWidget::EPAViewerWidget(const char* jplace_name, QWidget* parent)
     
     gvTree->setRenderHint(QPainter::Antialiasing, true );
     gvTree->setRenderHint( QPainter::HighQualityAntialiasing, true );
+    gvTree->setBackgroundBrush(QBrush(Qt::black));
     
     ui_->saTree->setWidget(gvTree);
     gs->setParent(gvTree);

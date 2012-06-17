@@ -138,7 +138,8 @@ int PhyloTreeView::draw_childs(const cache_node &cn, int xstart, int ymin, int y
             
             
             QGraphicsSimpleTextItem *gsst = gs->addSimpleText( QString(cn.taxon().c_str()) );
-           
+//             gsst->setPen(QPen(Qt::white));
+            gsst->setBrush(QBrush(Qt::white));
             
             gsst->setPos( xstart + xinc + 10, ymid - gsst->boundingRect().height() * 0.5 );
 //             pi->setPen(QPen(Qt::red));
@@ -241,7 +242,8 @@ QGraphicsScene* PhyloTreeView::initGraphicsScene( std::map<std::string, QGraphic
 PhyloTreeView::~PhyloTreeView() {}
 QPen PhyloTreeView::default_pen() {
     QPen pen0;
-    pen0.setColor( QColor(Qt::black) );
+    //pen0.setColor( QColor(Qt::black) );
+    pen0.setColor( QColor(Qt::white) );
     pen0.setWidth(2.0);
     pen0.setCapStyle(Qt::RoundCap);
     pen0.setJoinStyle(Qt::RoundJoin);
