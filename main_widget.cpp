@@ -173,7 +173,9 @@ private:
 
 class alignment_grid_model : public TextGridModel {
 public:
-    alignment_grid_model( QSharedPointer<output_alignment_store> oas, bool use_ref ) : oas_(oas), use_ref_(use_ref) {}
+    alignment_grid_model( QSharedPointer<output_alignment_store> oas, bool use_ref, bool protein ) : oas_(oas), use_ref_(use_ref),
+    protein_(protein) 
+    {}
     
     
     virtual QSize size() {
@@ -248,23 +250,83 @@ public:
             return QColor( 255, 0, 255 );
         }
         
-	QColor rcol;
-        switch( c ) {
-        case 'A':
-            return QColor( 255, 0, 0 );
-        case 'C': 
-            return QColor( 0, 255, 0 );
-        case 'G':
-            return QColor( 0, 0, 255 );
-        case 'T':
-            return QColor( 255, 200, 0 );
-        default:
-            return Qt::white;
+        
+        
+        
+        if( !protein_ ) {
+            // nucleotice color mapping
+            switch( c ) {
+                case 'A':
+                    return QColor( 255, 0, 0 );
+                case 'C': 
+                    return QColor( 0, 255, 0 );
+                case 'G':
+                    return QColor( 0, 0, 255 );
+                case 'T':
+                    return QColor( 255, 200, 0 );
+                default:
+                    return Qt::white;
+            }
+        } else {
+        
+            // protein color mapping
+            
+            switch( c ) {
+                case 'A':
+                case 'I':   
+                case 'L':
+                case 'M':
+                case 'F':
+                case 'W':
+                case 'V':
+                    return Qt::blue;
+                    
+                case 'R':
+                case 'K':
+                    return Qt::red;
+                    
+                case 'N':
+                    return Qt::green;
+                    
+                case 'C':
+                    return Qt::blue;
+                    
+                case 'Q':
+                    return Qt::green;
+                    
+                case 'E':
+                    return Qt::magenta;
+                    
+                case 'D':
+                    return Qt::magenta;
+                    
+                case 'G':
+                    return QColor(255,200,0);
+                    
+                case 'H':
+                case 'Y':
+                    return Qt::cyan;
+                    
+                case 'P':
+                    return Qt::yellow;
+                    
+                case 'S':
+                case 'T':
+                    return Qt::green;
+                    
+                default:
+                    return Qt::white;
+                    
+                    
+                    
+            }   
         }
     }
 private:
     QSharedPointer<output_alignment_store> oas_;
     bool use_ref_;
+    bool protein_;
+    
 };
 
 
@@ -786,8 +848,10 @@ void MainWidget::on_scoring_done(QSharedPointer<output_alignment_store> oa, QSha
 //     QScopedPointer<TextGridModel> qs_model(new alignment_grid_model(oa, false));
 //     QScopedPointer<TextGridModel> ref_model(new alignment_grid_model(oa, true));
     
-    qs_grid_model_ = QSharedPointer<TextGridModel> (new alignment_grid_model(oa, false));
-    ref_grid_model_ = QSharedPointer<TextGridModel> (new alignment_grid_model(oa, true));
+    
+    
+    qs_grid_model_ = QSharedPointer<TextGridModel> (new alignment_grid_model(oa, false, is_protein_));
+    ref_grid_model_ = QSharedPointer<TextGridModel> (new alignment_grid_model(oa, true, is_protein_));
     
 //     float zoom_factor = ui->cbZoom->
     
