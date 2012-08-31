@@ -25,7 +25,11 @@ int main( int argc, char *argv[] ) {
 
 
     QApplication a(argc, argv);
-    LargeAli w;
+    const char *filename = 0;
+    if( argc == 2 ) {
+        filename = argv[1];
+    }
+    LargeAli w(filename);
 
 //     if(false) {
 //         TestModel tm;

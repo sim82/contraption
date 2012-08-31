@@ -34,7 +34,7 @@
 #include <QGraphicsScene>
 
 #include "ivymike/time.h"
-
+#include "build_versions.h"
 
 
 
@@ -377,6 +377,7 @@ public:
 
         papara::lout << "qs preprocess" << std::endl;
         qs_.preprocess();
+	papara::lout << "num qs: " << qs_.size() << "\n";
 
 
         papara::lout << "ref preprocess" << std::endl;
@@ -797,17 +798,14 @@ void MainWidget::on_state_ready(QSharedPointer< papara_state > state, QString ms
     //ui->pte_log->setVisible(false);
     showLog(false);
 
-    QScrollArea *qs = new QScrollArea();
-    
-    
-    PhyloTreeView *ptv = new PhyloTreeView(papara_->tree());
-    
-    QGraphicsView *gv = new QGraphicsView( ptv->initGraphicsScene(0) );
-    
-    qs->setWidget(gv);
-    
-    qs->setVisible(true);
-    
+    if( false ) {
+        QScrollArea *qs = new QScrollArea();
+        PhyloTreeView *ptv = new PhyloTreeView(papara_->tree());
+        QGraphicsView *gv = new QGraphicsView( ptv->initGraphicsScene(0) );
+        qs->setWidget(gv);
+        
+        qs->setVisible(true);
+    }
 }
 
 void MainWidget::resize_rows_columns( QTableView *tv, int row_size, int column_size ) {

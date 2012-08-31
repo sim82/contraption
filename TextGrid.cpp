@@ -277,7 +277,7 @@ void TextGrid::setZoom( int factor ) {
 		parentScrollArea()->horizontalScrollBar()->setValue(hn);
 		parentScrollArea()->verticalScrollBar()->setValue(vn);
 	} else {
-		QMessageBox::critical( this, "no psa", "no psa" );
+		//QMessageBox::critical( this, "no psa", "no psa" );
 	}
 	
 }

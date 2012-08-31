@@ -40,9 +40,9 @@ class LargeAli : public QWidget
     Q_OBJECT
 
 public:
-    explicit LargeAli(QWidget *parent = 0);
+    explicit LargeAli(const char *filename = 0, QWidget *parent = 0);
     ~LargeAli();
-
+    void open_file( const std::string &filename );
 public Q_SLOTS:
 	void on_pbLoad_clicked();
 
