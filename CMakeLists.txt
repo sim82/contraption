@@ -100,13 +100,16 @@ INCLUDE_DIRECTORIES( ${CMAKE_BINARY_DIR} )
 
 # here we instruct CMake to build "sample" executable from all of the source files
 
-add_executable( test WIN32 main.cpp main_widget.cpp TextGrid.cpp FileSelector.cpp PhyloTreeView.cpp ${SAMPLE_MOC_SRCS} ${SAMPLE_UI_HDRS})
+add_executable( visual_papara WIN32 main.cpp main_widget.cpp TextGrid.cpp FileSelector.cpp PhyloTreeView.cpp ${SAMPLE_MOC_SRCS} ${SAMPLE_UI_HDRS})
 add_executable( largali largali_main.cpp large_ali.cpp TextGrid.cpp ${LARGALI_MOC_SRCS} ${LARGALI_UI_HDRS})
 
 add_executable( epa_viewer epa_viewer_main.cpp EPAViewerWidget.cpp PhyloTreeView.cpp ${EPA_VIEWER_MOC_SRCS} ${EPA_VIEWER_UI_HDRS})
 
 
 
-target_link_libraries(test ${QT_LIBRARIES} papara_core ivymike ublas_jama  )
+target_link_libraries(visual_papara ${QT_LIBRARIES} papara_core ivymike ublas_jama  )
 target_link_libraries(largali ${QT_LIBRARIES} ivymike ublas_jama )
 target_link_libraries(epa_viewer ${QT_LIBRARIES} ivymike ublas_jama )
+
+
+INSTALL_TARGETS( /bin visual_papara )
