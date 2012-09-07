@@ -41,18 +41,18 @@ TextGrid::TextGrid(QScrollArea* w, int zoom_factor, QSize cell_size )
    
 {
     f.setStyleHint(QFont::Monospace);
-//    f.setPointSize(12);
+//     f.setPointSize(10);
     
     setFont(f);
     
     QFontMetrics metrics = fontMetrics();
 
-	QRect max_rect = metrics.boundingRect( 'M' );
+    QRect max_rect = metrics.boundingRect( 'G' );
     //int fmw = metrics.maxWidth();
     //int fmh = metrics.ascent();
     
-	int fmw = max_rect.width() + 2;
-    int fmh = metrics.height() + 2;
+    int fmw = max_rect.width() + 2;
+    int fmh = metrics.ascent() + 2;
 
     cell_size_ = QSize(fmw,fmh);
     
@@ -137,9 +137,9 @@ void TextGrid::paintEvent(QPaintEvent* e) {
         
         //const float tmin = 7;
         //const float tmax = 9;
-		const float tmax = cell_size_.width() - 2;
-		const float tmin = cell_size_.width() - 4;
-
+        const float tmax = cell_size_.width() - 2;
+        const float tmin = cell_size_.width() - 4;
+                
         int lighten = -1;
         bool set_tcol = false;
         bool show_text = true;
@@ -166,7 +166,8 @@ void TextGrid::paintEvent(QPaintEvent* e) {
             
             lighten = lighten_min + td * (lighten_max - lighten_min);
         }
-        const QPoint text_offset( 1, 1 );
+        //         const QPoint text_offset( 1, 1 );
+        const QPoint text_offset( 1, -2 );
         for( int y = yfirst; y <= ylast; ++y ) {
             for( int x = xfirst; x <= xlast; ++x ) {
                 
@@ -193,7 +194,7 @@ void TextGrid::paintEvent(QPaintEvent* e) {
                         p.setPen(tcol);
                     }
                     //                     p.setBrush(QBrush(tcol));
-					
+                    
                     p.drawStaticText(drf.topLeft() + text_offset, stext_.at(size_t(c.toAscii())));   
 //                     p.drawText(drf.topLeft(), c );   
                 

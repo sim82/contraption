@@ -19,6 +19,7 @@
 
 
 #include "papara.h"
+#include "blast_partassign.h"
 
 #include "main_widget.h"
 #include "ui_main_widget.h"
@@ -352,7 +353,7 @@ template<typename seq_tag>
 class papara_state_impl : public papara_state {
 public:
 
-    papara_state_impl( QPlainTextEdit *qpte_dont_use_me, const std::string &tree_name, const std::string &ref_name, const std::string &qs_name )
+    papara_state_impl( QPlainTextEdit *qpte_dont_use_me, const std::string &tree_name, const std::string &ref_name, const std::string &qs_name, const std::string &pg_blast, const std::string &pg_partitions )
         : sbq_(qpte_dont_use_me),
           log_file_( "contraption_log.txt"),
           ost_( &sbq_ ),
@@ -363,7 +364,22 @@ public:
           scoring_parameters_(papara::papara_score_parameters::default_scores())
     {
 
-
+        
+        if( !pg_blast.empty() && !pg_partitions.empty() ) {
+            std::ifstream blast_is( pg_blast.c_str() );
+            if( !blast_is.good() ) {
+                throw std::runtime_error( "can not open blast hits file" );
+            }
+            
+            std::ifstream part_is( pg_partitions.c_str() );
+            if( !part_is.good() ) {
+                throw std::runtime_error( "can not open partition file" );
+                
+            }
+            
+            
+            part_assignment_.reset( new partassign::part_assignment( blast_is, part_is ));
+        }
        // qpte->appendPlainText( "xxx");
         //qpte->appendPlainText( "yyy\n");
 //        papara::lout << "bla bla bla" << std::endl;
@@ -385,6 +401,14 @@ public:
         refs_.build_ref_vecs();
         papara::lout << "done." << std::endl;
         
+        if( !part_assignment_.isNull() ) {
+            
+            //qs.init_partition_assignments( *part_assign );
+            std::vector<std::pair<size_t,size_t> > qs_bounds = partassign::resolve_qs_bounds( refs_, qs_, *part_assignment_ );
+            
+        
+            qs_.set_per_qs_bounds( qs_bounds );
+        }
 //         std::ofstream os( "queries.txt" );
 //         
 //         qs_.write( os );
@@ -462,7 +486,7 @@ private:
     papara::references<pvec_pgap,seq_tag> refs_;
     
     papara::papara_score_parameters scoring_parameters_;
-    
+    QScopedPointer<partassign::part_assignment> part_assignment_;
 };
 
 // converting from QString to const char* is ridiculusly complicated. so store string as when conversion is necessary std::string...
@@ -480,7 +504,7 @@ static bool is_readable( std::string filename ) {
 }
 
 
-MainWidget::MainWidget(QString treeName, QString refName, QString queryName, bool is_protein, QWidget* parent) :
+MainWidget::MainWidget(QString treeName, QString refName, QString queryName, bool is_protein, QString pgBlastName, QString pgPartitionsName, QWidget* parent) :
     QWidget(parent),
     ui(new Ui::MainWidget),
     progress_dialog_(0),
@@ -568,7 +592,8 @@ MainWidget::MainWidget(QString treeName, QString refName, QString queryName, boo
     ref_filename_ = de_q_string( refName );
     qs_filename_ = de_q_string( queryName );
     
-    
+    pg_blast_name_ = de_q_string( pgBlastName );
+    pg_partitions_name_ = de_q_string( pgPartitionsName );
     
     check_filenames();
     
@@ -683,7 +708,7 @@ void MainWidget::on_pbLoad_clicked()
    // QThread *thread = new QThread;
     
     
-    state_worker_.reset( new state_worker( ui->pte_log, tree_filename_, ref_filename_, qs_filename_, is_protein_ ));
+    state_worker_.reset( new state_worker( ui->pte_log, tree_filename_, ref_filename_, qs_filename_, is_protein_, pg_blast_name_, pg_partitions_name_ ));
     //obj is a pointer to a QObject that will trigger the work to start. It could just be this
 
     assert( bg_thread_->isRunning() );
@@ -956,9 +981,9 @@ void state_worker::doWork()
         papara_state *ps;
         
         if( is_protein_ ) {
-            ps = new papara_state_impl<papara::tag_aa>( qpte_, tree_, ref_, qs_);
+            ps = new papara_state_impl<papara::tag_aa>( qpte_, tree_, ref_, qs_, pg_blast_, pg_partitions_);
         } else {
-            ps = new papara_state_impl<papara::tag_dna>( qpte_, tree_, ref_, qs_);   
+            ps = new papara_state_impl<papara::tag_dna>( qpte_, tree_, ref_, qs_, pg_blast_, pg_partitions_);   
         }
         ps->do_preprocessing();
         

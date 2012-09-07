@@ -113,7 +113,16 @@ class state_worker : public QObject
     Q_OBJECT
 
 public:
-    state_worker( QPlainTextEdit *qpte, const std::string &tree, const std::string &ref, const std::string &qs, bool is_protein ) : qpte_(qpte), tree_(tree), ref_(ref), qs_(qs), finished_(false), is_protein_(is_protein) {}
+    state_worker( QPlainTextEdit *qpte, const std::string &tree, const std::string &ref, const std::string &qs, bool is_protein, const std::string &pg_blast, const std::string &pg_partitions ) 
+    : qpte_(qpte),
+    tree_(tree), 
+    ref_(ref), 
+    qs_(qs), 
+    pg_blast_(pg_blast),
+    pg_partitions_(pg_partitions),
+    finished_(false), 
+    is_protein_(is_protein) 
+    {}
 
     virtual ~state_worker() { 
         std::cout << "~state_worker\n";
@@ -141,6 +150,9 @@ private:
     std::string tree_;
     std::string ref_;
     std::string qs_;
+    
+    std::string pg_blast_;
+    std::string pg_partitions_;
     
     bool finished_;
     bool is_protein_;
@@ -244,7 +256,7 @@ class MainWidget : public QWidget
     Q_OBJECT
 
 public:
-    explicit MainWidget(QString treeName, QString refName, QString queryName, bool is_protein, QWidget *parent = 0);
+    explicit MainWidget( QString treeName, QString refName, QString queryName, bool is_protein, QString pgBlastName, QString pgPartitionsName, QWidget* parent = 0 );
     ~MainWidget();
 
     void post_show_stuff();
@@ -321,6 +333,8 @@ private:
     std::string qs_filename_;
     const bool is_protein_;
     int log_size_;
+    std::string pg_blast_name_;
+    std::string pg_partitions_name_;
 };
 
 #endif // DIALOG_H

@@ -40,11 +40,21 @@ public:
     QString getQuery() ;
     bool isProtein();
     
+    bool isPerPartition() ;
+    
+    QString getBlastFile() ;
+    
+    QString getPartitionFile() ;
+    
 private:
     FileSelector *fsTree;
     FileSelector *fsRef;
     FileSelector *fsQuery;
     QCheckBox *cbProtein;
+    QCheckBox *cbPerPartition;
+    FileSelector *fsBlast;
+    FileSelector *fsPartition;
+    
 };
 
 

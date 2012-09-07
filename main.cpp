@@ -107,9 +107,19 @@ int main( int argc, char *argv[] ) {
     QString queryName = loadPage->getQuery();
     bool is_protein = loadPage->isProtein();
     
+    
+    QString blastFilename = loadPage->getBlastFile();
+    QString partitionName = loadPage->getPartitionFile();
+    
+    if( !loadPage->isPerPartition() ) {
+        // empty filenames are used to indicate that the option is disabled. make sure that they are really emapty.
+        blastFilename.clear();
+        partitionName.clear();
+    }
+    
 //     std::cout << "tree: " << treeName.toStdString() << "\n";
     
-    MainWidget w( treeName, refName, queryName, is_protein );
+    MainWidget w( treeName, refName, queryName, is_protein, blastFilename, partitionName );
 
 //     if(false) {
 //         TestModel tm;
@@ -164,9 +174,27 @@ LoadWizardPage::LoadWizardPage() : QWizardPage() {
     //fsQuery = new FileSelector( new file_validator_fasta );
     cbProtein = new QCheckBox();
     
+    
+    QLabel *laPerPartition = new QLabel( "Per-partition alignment:" );
+    //fsQuery = new FileSelector( new file_validator_fasta );
+    cbPerPartition = new QCheckBox();
+    
+    QLabel *laBlast = new QLabel( "Blast output:" );
+    //fsQuery = new FileSelector( new file_validator_fasta );
+    fsBlast = new FileSelector();
+    fsBlast->setEnabled(false);
+    
+    
+    QLabel *laPartition = new QLabel( "Partition file:" );
+    //fsQuery = new FileSelector( new file_validator_fasta );
+    fsPartition = new FileSelector();
+    fsPartition->setEnabled(false);
+    
+    
     QGridLayout *layout = new QGridLayout;
 
-
+    connect( cbPerPartition, SIGNAL(toggled(bool)), fsBlast, SLOT(setEnabled(bool)));
+    connect( cbPerPartition, SIGNAL(toggled(bool)), fsPartition, SLOT(setEnabled(bool)));
     layout->addWidget(laTree, 0, 0 );
     layout->addWidget(fsTree, 0, 1 );
 
@@ -179,11 +207,29 @@ LoadWizardPage::LoadWizardPage() : QWizardPage() {
     layout->addWidget(laProtein, 3, 0);
     layout->addWidget(cbProtein, 3, 1);
     
-#ifndef WIN32
-    fsTree->changeFilename( "/space/projects/2012_robert_454/RAxML_bestTree.cora_Sanger_reference_alignment.tre" );
     
-    fsRef->changeFilename( "/space/projects/2012_robert_454/cora_Sanger_reference_alignment.phy" );
-    fsQuery->changeFilename( "/space/projects/2012_robert_454/cluster_52_72_cora_inversa_squamiformis_DIC_148_149.fas" );
+    layout->addWidget(laPerPartition, 4, 0);
+    layout->addWidget(cbPerPartition, 4, 1);
+    
+    layout->addWidget(laBlast, 5, 0 );
+    layout->addWidget(fsBlast, 5, 1 );
+    
+    layout->addWidget(laPartition, 6, 0 );
+    layout->addWidget(fsPartition, 6, 1 );
+    
+#ifndef WIN32
+//     fsTree->changeFilename( "/space/projects/2012_robert_454/RAxML_bestTree.cora_Sanger_reference_alignment.tre" );
+//     
+//     fsRef->changeFilename( "/space/projects/2012_robert_454/cora_Sanger_reference_alignment.phy" );
+//     fsQuery->changeFilename( "/space/projects/2012_robert_454/cluster_52_72_cora_inversa_squamiformis_DIC_148_149.fas" );
+    
+    fsTree->changeFilename( "/home/sim/src_exelixis/papara_nt/test_1604/RAxML_bestTree.ref_orig" );
+    
+    fsRef->changeFilename( "/home/sim/src_exelixis/papara_nt/test_1604/orig.phy.1" );
+    fsQuery->changeFilename( "/home/sim/src_exelixis/papara_nt/test_1604/qs.fa.200" );
+    
+    fsBlast->changeFilename("/home/sim/src_exelixis/papara_nt/test.blast");
+    fsPartition->changeFilename("/home/sim/src_exelixis/papara_nt/test.model");
     
 #else
     fsTree->changeFilename( "C:/2012_robert_454/RAxML_bestTree.cora_Sanger_reference_alignment.tre" );
@@ -212,4 +258,16 @@ bool LoadWizardPage::isProtein() {
 
 LoadWizardPage::~LoadWizardPage() {
 //     std::cout << "~LoadWizardPage()\n";
+}
+QString LoadWizardPage::getBlastFile()
+{
+    return fsBlast->getFilename();
+}
+QString LoadWizardPage::getPartitionFile()
+{
+    return fsPartition->getFilename();
+}
+bool LoadWizardPage::isPerPartition()
+{
+    return cbPerPartition->isChecked();
 }
