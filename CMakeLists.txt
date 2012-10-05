@@ -1,6 +1,15 @@
 cmake_minimum_required(VERSION 2.8)
 
+
 project(papara_epa_gui_tools)
+
+INCLUDE(CPack)
+
+set( CPACK_PACKAGE_NAME visual_papara )
+set( CPACK_PACKAGE_VERSION 2.3 )
+set( CPACK_PACKAGE_CONTACT "simberger@gmail.com" )
+#set( CPACK_DEBIAN_PACKAGE_DEPENDS
+
 
 add_subdirectory(ivy_mike)
 add_subdirectory(papara_nt)
@@ -21,10 +30,21 @@ file(GLOB IM_HEADERS *.h)
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -D_SCL_SECURE_NO_WARNINGS") # as long as there is no support for std::array, these warnings are plain stupid!
 ELSE()
 
-SET(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -Wall -march=native")
+SET(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -Wall -msse3")
+
 ENDIF()
 
 include_directories(${IVYMIKE_INCLUDE} papara_nt papara_nt/ublasJama-1.0.2.3 )
+
+
+SET(CPACK_PACKAGE_DESCRIPTION_SUMMARY "VisualPaPaRa 2 GUI frontend")
+SET(CPACK_PACKAGE_VENDOR "Simon A. Berger")
+SET(CPACK_PACKAGE_DESCRIPTION_FILE "${CMAKE_CURRENT_SOURCE_DIR}/INSTALL")
+SET(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE")
+SET(CPACK_PACKAGE_VERSION_MAJOR "2")
+SET(CPACK_PACKAGE_VERSION_MINOR "3")
+SET(CPACK_PACKAGE_VERSION_PATCH "0")
+SET(CPACK_DEBIAN_PACKAGE_MAINTAINER "simberger@gmail.com")
 
  # with SET() command you can change variables or define new ones
   # here we define SAMPLE_SRCS variable that contains a list of all .cpp files
@@ -114,3 +134,4 @@ target_link_libraries(epa_viewer ${QT_LIBRARIES} ivymike ublas_jama )
 
 
 INSTALL_TARGETS( /bin visual_papara )
+
