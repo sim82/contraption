@@ -1,4 +1,7 @@
 cmake_minimum_required(VERSION 2.8)
+
+project(papara_epa_gui_tools)
+
 add_subdirectory(ivy_mike)
 add_subdirectory(papara_nt)
 
@@ -19,8 +22,6 @@ set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -D_SCL_SECURE_NO_WARNINGS") 
 ELSE()
 
 SET(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -Wall -march=native")
-
-
 ENDIF()
 
 include_directories(${IVYMIKE_INCLUDE} papara_nt papara_nt/ublasJama-1.0.2.3 )
