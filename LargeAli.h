@@ -26,7 +26,7 @@
 #include <iostream>
 #include <QSharedPointer>
 #include "TextGrid.h"
-#include "ivymike/LargePhylip.h"
+#include "ivymike/large_phylip.h"
 
 
 namespace Ui {
@@ -45,7 +45,7 @@ public:
     void open_file( const std::string &filename );
 public Q_SLOTS:
 	void on_pbLoad_clicked();
-
+        void on_pbSuspend_clicked() ;
 private Q_SLOTS:
     
 private:
@@ -57,7 +57,7 @@ private:
     
     
     QSharedPointer<TextGridModel> grid_model_;
-	QScopedPointer<LargePhylip> large_phy_;
+    QScopedPointer<ivy_mike::large_phylip> large_phy_;
   
 };
 

@@ -31,7 +31,7 @@
 #include <deque>
 #include "TextGrid.h"
 #include "PhyloTreeView.h"
-
+#include "papara.h"
 
 class QPlainTextEdit;
 class QProgressDialog;
@@ -44,12 +44,15 @@ namespace Ui {
 
 namespace papara {
     class scoring_results;
+    class log_sink;
+    
 }
 
 
     
 class output_alignment_store;
 class papara_state;
+
 
 Q_DECLARE_METATYPE(QSharedPointer<papara_state>)
 Q_DECLARE_METATYPE(QSharedPointer<papara::scoring_results> )
@@ -76,44 +79,35 @@ private:
     QScopedPointer<QThread> thread_;
 };
 
-
-
-class streambuf_to_q_plain_text_edit : public QObject, public std::streambuf
+class PaparaLogSink_QPlainTextEdit : public QObject, public papara::log_sink
 {
 Q_OBJECT
 public:
-    explicit streambuf_to_q_plain_text_edit( QPlainTextEdit *qpte, std::size_t buff_sz = 80, std::size_t put_back = 8);
-
-
+    explicit PaparaLogSink_QPlainTextEdit( QPlainTextEdit *qpte );
+    virtual void post( char overflow, char *start, char *end ) ;
 private:
 
-    void append( int of, char *first, char *last );
-    // overrides base class over()
-    int_type overflow(int c);
-
-    int sync();
-
+    
     // copy ctor and assignment not implemented;
     // copying not allowed
-    streambuf_to_q_plain_text_edit(const streambuf_to_q_plain_text_edit &);
-    streambuf_to_q_plain_text_edit &operator= (const streambuf_to_q_plain_text_edit &);
+    PaparaLogSink_QPlainTextEdit(const PaparaLogSink_QPlainTextEdit &);
+    PaparaLogSink_QPlainTextEdit &operator= (const PaparaLogSink_QPlainTextEdit &);
 
 
 Q_SIGNALS:
     void post_text( QString );
 private:
 
-    const std::size_t put_back_;
-    std::vector<char> buffer_;
 };
 
 
-class state_worker : public QObject
+
+class StateWorker : public QObject
 {
     Q_OBJECT
 
 public:
-    state_worker( QPlainTextEdit *qpte, const std::string &tree, const std::string &ref, const std::string &qs, bool is_protein, const std::string &pg_blast, const std::string &pg_partitions ) 
+    StateWorker( QPlainTextEdit *qpte, const std::string &tree, const std::string &ref, const std::string &qs, bool is_protein, const std::string &pg_blast, const std::string &pg_partitions ) 
     : qpte_(qpte),
     tree_(tree), 
     ref_(ref), 
@@ -124,7 +118,7 @@ public:
     is_protein_(is_protein) 
     {}
 
-    virtual ~state_worker() { 
+    virtual ~StateWorker() { 
         std::cout << "~state_worker\n";
         if( !finished_ ) {qWarning("~state_worker: not finished!\n");}
         
@@ -159,15 +153,15 @@ private:
 };
 
 
-class scoring_worker : public QObject
+class ScoringWorker : public QObject
 {
     Q_OBJECT
 
 public:
-    scoring_worker( QPlainTextEdit *qpte, QSharedPointer<papara_state> state, QSharedPointer<papara::scoring_results> res, bool ref_gaps ) 
+    ScoringWorker( QPlainTextEdit *qpte, QSharedPointer<papara_state> state, QSharedPointer<papara::scoring_results> res, bool ref_gaps ) 
     : qpte_(qpte), state_(state), res_(res), ref_gaps_(ref_gaps), finished_(false) {}
 
-    virtual ~scoring_worker() { 
+    virtual ~ScoringWorker() { 
         std::cout << "~scoring_worker\n";
         if( !finished_ ) {qWarning("~scoring_woker: not finished!\n");}
     }
@@ -196,68 +190,15 @@ private:
     bool finished_;
 };
 
-// class bg_align_worker : public QObject {
-//     Q_OBJECT
-// public:
-//     bg_align_worker( const papara_state *state, QThread *thread );
-//     
-//     virtual ~bg_align_worker() {}
-//     
-// public Q_SLOTS:
-//     align( size_t qs_idx ) ;
-//     
-//     
-// public Q_SIGNAL:
-//     align_done( size_t qs_idx, std::vector<uint8_t> seq ) ;
-// private:
-//     const size_t num_qs_;
-// //     std::deque<size_t> queue_;
-//     const papara_state *state_;
-// };
 
-#if 0
-class raw_alignment_table_model : public QAbstractTableModel
-{
-     Q_OBJECT
-public:
 
-    raw_alignment_table_model(QObject *parent );
-    int rowCount(const QModelIndex &parent = QModelIndex()) const ;
-    int columnCount(const QModelIndex &parent = QModelIndex()) const;
-    QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const;
-    QVariant headerData ( int section, Qt::Orientation orientation, int role = Qt::DisplayRole ) const ;
-
-    void set_papara_state( papara_state *pstate ) { papara_state_ = pstate; }
-private:
-    papara_state *papara_state_;
-};
-
-class alignment_table_model : public QAbstractTableModel {
-    Q_OBJECT
-public:
-    alignment_table_model( QObject *parent, bool use_ref = false ) ;
-    int rowCount(const QModelIndex &parent = QModelIndex()) const;
-    int columnCount(const QModelIndex &parent = QModelIndex()) const;
-    QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const;
-    QVariant headerData ( int section, Qt::Orientation orientation, int role = Qt::DisplayRole ) const;
-    
-    void set_oas( const output_alignment_store *oas ) {
-        oas_ = oas;
-    }
-    
-private:
-    const output_alignment_store *oas_;
-    const bool use_ref_;
-    QVariant x_;
-};
-#endif
-class MainWidget : public QWidget
+class PaparaMainWidget : public QWidget
 {
     Q_OBJECT
 
 public:
-    explicit MainWidget( QString treeName, QString refName, QString queryName, bool is_protein, QString pgBlastName, QString pgPartitionsName, QWidget* parent = 0 );
-    ~MainWidget();
+    explicit PaparaMainWidget( QString treeName, QString refName, QString queryName, bool is_protein, QString pgBlastName, QString pgPartitionsName, QWidget* parent = 0 );
+    ~PaparaMainWidget();
 
     void post_show_stuff();
 
@@ -304,8 +245,8 @@ private:
     
     
     qt_thread_guard bg_thread_;
-    QScopedPointer<scoring_worker> scoring_worker_;
-    QScopedPointer<state_worker> state_worker_;
+    QScopedPointer<ScoringWorker> scoring_worker_;
+    QScopedPointer<StateWorker> state_worker_;
     
 //     TextGrid *tg_ref_;
 //     TextGrid *tg_qs_;

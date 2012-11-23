@@ -25,36 +25,47 @@
 #include <QFileDialog>
 #include <QScopedPointer>
 #include <QScrollArea>
-#include "large_ali.h"
-#include "ui_large_ali.h"
+#include <stdint.h>
+#include "LargeAli.h"
+#include "ivymike/large_phylip.h"
+#include "ui_LargeAli.h"
 #include "TextGrid.h"
 
 class largali_model : public TextGridModel {
 public:
-	largali_model( LargePhylip *large_phy ) : large_phy_(large_phy) {
-
-	}
-
-	virtual QSize size() {
-		size_t width = large_phy_->getSeqLen();
-		size_t height = large_phy_->size();
-
-		return QSize( width, height );
-	}
-
-	virtual QChar data( size_t x, size_t y ) {
-		u1_t *sfirst = large_phy_->getSequenceBegin(y);
-		assert( sfirst != 0 );
-		return sfirst[x];
-	}
-
-	virtual QColor color( size_t x, size_t y ) {
-		u1_t *sfirst = large_phy_->getSequenceBegin(y);
-		assert( sfirst != 0 );
-
-		u1_t c = toupper(sfirst[x]);
+    largali_model( ivy_mike::large_phylip *large_phy ) : large_phy_(large_phy) {
         
-        const bool protein = false;
+    }
+    
+    virtual QSize size() {
+        size_t width = large_phy_->sequence_len();
+        size_t height = large_phy_->size();
+        
+        return QSize( width, height );
+    }
+    
+    virtual QChar data( size_t x, size_t y ) {
+        
+        if( !large_phy_->is_mapped() ) {
+            return 'X';
+        }
+        
+        uint8_t *sfirst = large_phy_->sequence_begin_at(y);
+        assert( sfirst != 0 );
+        return sfirst[x];
+    }
+    
+    virtual QColor color( size_t x, size_t y ) {
+        if( !large_phy_->is_mapped() ) {
+            return QColor( 255, 0, 0 );
+        }
+        
+        uint8_t *sfirst = large_phy_->sequence_begin_at(y);
+        assert( sfirst != 0 );
+        
+        uint8_t c = toupper(sfirst[x]);
+        
+        const bool protein = true;
         if( !protein ) {
             // nucleotice color mapping
             switch( c ) {
@@ -177,11 +188,11 @@ public:
 #endif
 
 		
-	}
+    }
 
 private:
-	LargePhylip *large_phy_;
-	
+    ivy_mike::large_phylip *large_phy_;
+    
 };
 
 LargeAli::LargeAli(const char* filename, QWidget* parent) :
@@ -206,7 +217,7 @@ void LargeAli::open_file( const std::string &filename ) {
     
     
     try {
-        large_phy_.reset( new LargePhylip(filename.c_str() ));
+        large_phy_.reset( new ivy_mike::large_phylip(filename.c_str() ));
         //std::cout << "name 0: " << large_phy_->getName(0) << "\n";
 
         grid_model_ = QSharedPointer<TextGridModel> (new largali_model(large_phy_.data()));
@@ -230,4 +241,15 @@ void LargeAli::on_pbLoad_clicked() {
     
     open_file( de_q_string(QFileDialog::getOpenFileName(this)) );
 	
+}
+void LargeAli::on_pbSuspend_clicked() {
+    if( !large_phy_.isNull() ) {
+        if( large_phy_->is_mapped() ) {
+            large_phy_->unmap();
+        } else {
+            large_phy_->map();
+        }
+        
+    }
+    
 }
