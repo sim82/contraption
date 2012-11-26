@@ -26,7 +26,7 @@
 #include <QWidget>
 #include <QScopedPointer>
 #include <QAbstractListModel>
-#include "ui_epa_viewer_widget.h"
+#include "ui_EPAViewerWidget.h"
 
 
 namespace Ui {

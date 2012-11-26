@@ -31,7 +31,7 @@
 #include <iostream>
 #include "main.h"
 #include "papara_nt/papara.h"
-#include "main_widget.h"
+#include "PaparaMainWidget.h"
 #include "TextGrid.h"
 #include "FileSelector.h"
 
@@ -119,7 +119,7 @@ int main( int argc, char *argv[] ) {
     
 //     std::cout << "tree: " << treeName.toStdString() << "\n";
     
-    MainWidget w( treeName, refName, queryName, is_protein, blastFilename, partitionName );
+    PaparaMainWidget w( treeName, refName, queryName, is_protein, blastFilename, partitionName );
 
 //     if(false) {
 //         TestModel tm;

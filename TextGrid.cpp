@@ -36,7 +36,7 @@
 
 
 TextGrid::TextGrid(QScrollArea* w, int zoom_factor, QSize cell_size ) 
-   : scroll_area_(w), QWidget(w), model_(0), cell_size_(cell_size), zoom_factor_(zoom_factor)
+   : QWidget(w), scroll_area_(w), model_(0), cell_size_(cell_size), zoom_factor_(zoom_factor)
    
    
 {

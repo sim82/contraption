@@ -19,7 +19,7 @@
 
 
 #include <QtGui/QApplication>
-#include "large_ali.h"
+#include "LargeAli.h"
 
 int main( int argc, char *argv[] ) {
 

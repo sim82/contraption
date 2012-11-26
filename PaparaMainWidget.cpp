@@ -21,7 +21,7 @@
 #include "papara.h"
 #include "blast_partassign.h"
 
-#include "main_widget.h"
+#include "PaparaMainWidget.h"
 #include "ui_main_widget.h"
 
 #include <QFileDialog>
@@ -39,76 +39,17 @@
 
 
 
-// streambuf_to_q_plain_text_edit::streambuf_to_q_plain_text_edit( QPlainTextEdit *qpte, std::size_t buff_sz, std::size_t put_back )
-// :
-//   put_back_(std::max(put_back, size_t(1))),
-//   buffer_(std::max(buff_sz, put_back_) + put_back_)
-// {
-// 
-//     QObject::connect( this, SIGNAL(post_text(QString)), qpte, SLOT(insertPlainText(const QString &)), Qt::QueuedConnection );
-//     QObject::connect( this, SIGNAL(post_text(QString)), qpte, SLOT(centerCursor()), Qt::QueuedConnection );
-// }
-// 
-// 
-// 
-// void streambuf_to_q_plain_text_edit::append( int of, char *first, char *last ) {
-//     size_t size = std::distance(first, last);
-// 
-// //     std::cout << "append: " << char(of) << " " << std::distance(first,last) << "\n";
-//     
-//     assert( size < 100000 );
-//     QByteArray ba( first, size );
-// 
-//     QString s;
-//     s.append(ba);
-// 
-//     if( of > 0 ) {
-//         const char b[2] = {char(of), '\0'};
-//         s.append( b );
-//     }
-//     
-//     //qpte_->appendPlainText(s);
-//     emit post_text( s );
-// 
-// }
-// 
-// // overrides base class over()
-// streambuf_to_q_plain_text_edit::int_type streambuf_to_q_plain_text_edit::overflow(int c) {
-// 
-// 
-// 
-// 
-// //            std::cout << "overflow:";
-// //            std::copy( pbase(), epptr(), std::ostream_iterator<char>(std::cout));
-// //            std::cout << (char) c;
-// //            std::cout << std::endl;
-// 
-//     append( c, pbase(), epptr() );
-// 
-//     setp(&buffer_.front(), (&buffer_.back()) + 1);
-// 
-//     return 1;
-// }
-// 
-// int streambuf_to_q_plain_text_edit::sync() {
-// //            std::cout << "sync:";
-// //            std::copy( pbase(), pptr(), std::ostream_iterator<char>(std::cout));
-// //            std::cout << std::endl;
-// 
-//     append( 0, pbase(), pptr() );
-//     setp(&buffer_.front(), (&buffer_.back()) + 1);
-//     return 0;
-// }
 
 
-papara_log_sink_q_plain_text_edit::papara_log_sink_q_plain_text_edit( QPlainTextEdit *qpte )  
+
+PaparaLogSink_QPlainTextEdit::PaparaLogSink_QPlainTextEdit( QPlainTextEdit *qpte )  
 {
 
     QObject::connect( this, SIGNAL(post_text(QString)), qpte, SLOT(insertPlainText(const QString &)), Qt::QueuedConnection );
     QObject::connect( this, SIGNAL(post_text(QString)), qpte, SLOT(centerCursor()), Qt::QueuedConnection );
 }
 
-void papara_log_sink_q_plain_text_edit::post ( char overflow, char* start, char* end )
+void PaparaLogSink_QPlainTextEdit::post ( char overflow, char* start, char* end )
 {
     size_t size = std::distance ( start, end );
 
@@ -505,7 +446,7 @@ private:
 
     //streambuf_to_q_plain_text_edit sbq_;
 
-    papara_log_sink_q_plain_text_edit sbq_;
+    PaparaLogSink_QPlainTextEdit sbq_;
     
     std::ofstream log_file_;
     papara::add_log_tee log_file_tee_;
@@ -540,7 +481,7 @@ static bool is_readable( std::string filename ) {
 }
 
 
-MainWidget::MainWidget(QString treeName, QString refName, QString queryName, bool is_protein, QString pgBlastName, QString pgPartitionsName, QWidget* parent) :
+PaparaMainWidget::PaparaMainWidget(QString treeName, QString refName, QString queryName, bool is_protein, QString pgBlastName, QString pgPartitionsName, QWidget* parent) :
     QWidget(parent),
     ui(new Ui::MainWidget),
     progress_dialog_(0),
@@ -640,7 +581,7 @@ MainWidget::MainWidget(QString treeName, QString refName, QString queryName, boo
     
 }
 
-MainWidget::~MainWidget()
+PaparaMainWidget::~PaparaMainWidget()
 {
     bg_thread_->quit();
     bg_thread_->wait( 1000 );
@@ -658,7 +599,7 @@ MainWidget::~MainWidget()
     delete ui;
 }
 
-void MainWidget::showLog( bool v ) {
+void PaparaMainWidget::showLog( bool v ) {
 //     return;
     if( !v ) {
         QList<int> old_sizes = ui->splitter->sizes();
@@ -680,7 +621,7 @@ void MainWidget::showLog( bool v ) {
     }
 }
 
-void MainWidget::post_show_stuff() {
+void PaparaMainWidget::post_show_stuff() {
     showLog(false);
     
     if( is_readable( tree_filename_ ) && is_readable( ref_filename_ ) && is_readable( qs_filename_ ) ) {
@@ -692,7 +633,7 @@ void MainWidget::post_show_stuff() {
     }
 }
 
-void MainWidget::on_pb_tree_clicked()
+void PaparaMainWidget::on_pb_tree_clicked()
 {
     //QFileDialog::exec
     std::cout << "tree\n";
@@ -702,7 +643,7 @@ void MainWidget::on_pb_tree_clicked()
     check_filenames();
 }
 
-void MainWidget::on_pb_ref_clicked()
+void PaparaMainWidget::on_pb_ref_clicked()
 {
     std::cout << "ref\n";
     ref_filename_ = de_q_string(QFileDialog::getOpenFileName(this));
@@ -710,7 +651,7 @@ void MainWidget::on_pb_ref_clicked()
     check_filenames();
 }
 
-void MainWidget::on_pb_qs_clicked()
+void PaparaMainWidget::on_pb_qs_clicked()
 {
     std::cout << "qs\n";
     qs_filename_ = de_q_string(QFileDialog::getOpenFileName(this));
@@ -723,7 +664,7 @@ void MainWidget::on_pb_qs_clicked()
 
 
 
-void MainWidget::on_pbLoad_clicked()
+void PaparaMainWidget::on_pbLoad_clicked()
 {
     if( tree_filename_.empty() || ref_filename_.empty() || qs_filename_.empty() ) {
         ui->pte_log->appendPlainText( "file missing\n");
@@ -744,7 +685,7 @@ void MainWidget::on_pbLoad_clicked()
    // QThread *thread = new QThread;
     
     
-    state_worker_.reset( new state_worker( ui->pte_log, tree_filename_, ref_filename_, qs_filename_, is_protein_, pg_blast_name_, pg_partitions_name_ ));
+    state_worker_.reset( new StateWorker( ui->pte_log, tree_filename_, ref_filename_, qs_filename_, is_protein_, pg_blast_name_, pg_partitions_name_ ));
     //obj is a pointer to a QObject that will trigger the work to start. It could just be this
 
     assert( bg_thread_->isRunning() );
@@ -760,7 +701,7 @@ void MainWidget::on_pbLoad_clicked()
 }
 
 
-void MainWidget::on_pbRun_clicked() {
+void PaparaMainWidget::on_pbRun_clicked() {
     //setEnabled(false);
     
     //ui->pte_log->setVisible(true);
@@ -811,7 +752,7 @@ void MainWidget::on_pbRun_clicked() {
     
     
    // QThread *thread = new QThread;
-    scoring_worker_.reset( new scoring_worker( ui->pte_log, papara_, scoring_result_, ui->cbRefGaps->isChecked() ));
+    scoring_worker_.reset( new ScoringWorker( ui->pte_log, papara_, scoring_result_, ui->cbRefGaps->isChecked() ));
     //obj is a pointer to a QObject that will trigger the work to start. It could just be this
 
     
@@ -827,7 +768,7 @@ void MainWidget::on_pbRun_clicked() {
     
 }
 
-void MainWidget::on_state_ready(QSharedPointer< papara_state > state, QString msg) {
+void PaparaMainWidget::on_state_ready(QSharedPointer< papara_state > state, QString msg) {
     if( progress_dialog_ != 0 ) {
         delete progress_dialog_;
     }
@@ -869,7 +810,7 @@ void MainWidget::on_state_ready(QSharedPointer< papara_state > state, QString ms
     }
 }
 
-void MainWidget::resize_rows_columns( QTableView *tv, int row_size, int column_size ) {
+void PaparaMainWidget::resize_rows_columns( QTableView *tv, int row_size, int column_size ) {
     const int num_rows = tv->model()->rowCount();
     const int num_cols = tv->model()->columnCount();
     
@@ -882,7 +823,7 @@ void MainWidget::resize_rows_columns( QTableView *tv, int row_size, int column_s
     }
 }
 
-void MainWidget::on_scoring_done(QSharedPointer<output_alignment_store> oa, QSharedPointer<papara::scoring_results> res, QString msg ) {
+void PaparaMainWidget::on_scoring_done(QSharedPointer<output_alignment_store> oa, QSharedPointer<papara::scoring_results> res, QString msg ) {
     if( progress_dialog_ != 0 ) {
         delete progress_dialog_;
     }
@@ -1009,7 +950,7 @@ void MainWidget::on_scoring_done(QSharedPointer<output_alignment_store> oa, QSha
 
 
 
-void state_worker::doWork()
+void StateWorker::doWork()
 {
     
     try {
@@ -1036,7 +977,7 @@ void state_worker::doWork()
     } 
 }
 
-void scoring_worker::doWork() {
+void ScoringWorker::doWork() {
     try {
         
         if( res_.isNull() ) {
@@ -1292,7 +1233,7 @@ QVariant alignment_table_model::headerData(int section, Qt::Orientation orientat
 }
 #endif
 
-void MainWidget::on_cbRefGaps_stateChanged(int s) {
+void PaparaMainWidget::on_cbRefGaps_stateChanged(int s) {
     
     if( !scoring_result_.isNull() ) {
         // TODO: make the forwarding dependent on expected time of alignment generation.
@@ -1300,7 +1241,7 @@ void MainWidget::on_cbRefGaps_stateChanged(int s) {
     }
     
 }
-void MainWidget::on_cbZoom_activated(int idx) {
+void PaparaMainWidget::on_cbZoom_activated(int idx) {
 //     if( tg_qs_ != 0 ) {
 //         tg_qs_->setZoom(ui->cbZoom->itemData(idx).toFloat());
 //     }
@@ -1311,7 +1252,7 @@ void MainWidget::on_cbZoom_activated(int idx) {
     
     
 }
-void MainWidget::invalidateScores() {
+void PaparaMainWidget::invalidateScores() {
 //     std::cout << "invalidate\n";
     
 	ui->pbRun->setPalette(QPalette(Qt::red));
@@ -1320,7 +1261,7 @@ void MainWidget::invalidateScores() {
 }
 
 
-void MainWidget::check_filenames() { 
+void PaparaMainWidget::check_filenames() { 
     if( is_readable( tree_filename_ ) && is_readable( ref_filename_ ) && is_readable( qs_filename_ ) ) {
         ui->pbLoad->setEnabled(true);
     }
@@ -1333,7 +1274,7 @@ qt_thread_guard::~qt_thread_guard() {
     thread_->quit();
     thread_->wait();
 }
-void MainWidget::on_pbSaveAs_clicked() {
+void PaparaMainWidget::on_pbSaveAs_clicked() {
     if( output_alignment_.isNull() ) {
         QMessageBox::critical( this, "Internal Error", "SaveAs requested with no valid output alignment" );
         abort();

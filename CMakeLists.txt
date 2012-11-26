@@ -56,7 +56,7 @@ SET(CPACK_DEBIAN_PACKAGE_MAINTAINER "simberger@gmail.com")
   # another list, this time it includes all header files that should be treated with moc
   SET( SAMPLE_MOC_HDRS
 #        dialog.h
-       main_widget.h
+       PaparaMainWidget.h
        TextGrid.h
        FileSelector.h
        PhyloTreeView.h
@@ -66,21 +66,21 @@ SET(CPACK_DEBIAN_PACKAGE_MAINTAINER "simberger@gmail.com")
   # some .ui files
   SET( SAMPLE_UIS
 #        dialog.ui
-       main_widget.ui
+       PaparaMainWidget.ui
   )
 
 
 set( LARGALI_SRCS
-	large_ali.cpp
+	LargeAli.cpp
 	TextGrid.cpp
 	)
 
 set( LARGALI_UIS
-	large_ali.ui
+	LargeAli.ui
 	)
 
 set( LARGALI_MOC_HDRS
-    large_ali.h
+    LargeAli.h
 	TextGrid.h
 	)
 
@@ -91,7 +91,7 @@ set( EPA_VIEWER_SRCS
         )
 
 set( EPA_VIEWER_UIS
-    epa_viewer_widget.ui
+    EPAViewerWidget.ui
         )
 
 set( EPA_VIEWER_MOC_HDRS
@@ -118,8 +118,8 @@ INCLUDE_DIRECTORIES( ${CMAKE_BINARY_DIR} )
 
 # here we instruct CMake to build "sample" executable from all of the source files
 
-add_executable( visual_papara WIN32 main.cpp main_widget.cpp TextGrid.cpp FileSelector.cpp PhyloTreeView.cpp ${SAMPLE_MOC_SRCS} ${SAMPLE_UI_HDRS})
-add_executable( largali largali_main.cpp large_ali.cpp TextGrid.cpp ${LARGALI_MOC_SRCS} ${LARGALI_UI_HDRS})
+add_executable( visual_papara WIN32 main.cpp PaparaMainWidget.cpp TextGrid.cpp FileSelector.cpp PhyloTreeView.cpp ${SAMPLE_MOC_SRCS} ${SAMPLE_UI_HDRS})
+add_executable( largali largali_main.cpp LargeAli.cpp TextGrid.cpp ${LARGALI_MOC_SRCS} ${LARGALI_UI_HDRS})
 
 add_executable( epa_viewer epa_viewer_main.cpp EPAViewerWidget.cpp PhyloTreeView.cpp ${EPA_VIEWER_MOC_SRCS} ${EPA_VIEWER_UI_HDRS})
 

@@ -32,7 +32,7 @@
 
 #include "EPAViewerWidget.h"
 #include "PhyloTreeView.h"
-#include "ui_epa_viewer_widget.h"
+#include "ui_EPAViewerWidget.h"
 
 
 namespace im_tree = ivy_mike::tree_parser_ms;

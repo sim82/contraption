@@ -25,8 +25,8 @@
 #include <QFileDialog>
 #include <QScopedPointer>
 #include <QScrollArea>
-#include "large_ali.h"
-#include "ui_large_ali.h"
+#include "LargeAli.h"
+#include "ui_LargeAli.h"
 #include "TextGrid.h"
 
 class largali_model : public TextGridModel {

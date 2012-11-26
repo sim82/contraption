@@ -109,7 +109,7 @@ private:
     
     
     //TextGridModel *model_;
-	QScrollArea *scroll_area_;
+    QScrollArea *scroll_area_;
     QSharedPointer<TextGridModel> model_;
     QSize model_size_;
     QSize cell_size_; // base cell size
