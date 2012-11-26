@@ -49,9 +49,9 @@
 //     };
 // };
 
-namespace papara {
-log_stream lout;
-}
+// namespace papara {
+// log_stream lout;
+// }
 
 
 QString random_text() {

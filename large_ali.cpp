@@ -54,7 +54,7 @@ public:
 
 		u1_t c = toupper(sfirst[x]);
         
-        const bool protein = false;
+        const bool protein = true;
         if( !protein ) {
             // nucleotice color mapping
             switch( c ) {

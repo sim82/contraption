@@ -31,7 +31,7 @@
 #include <deque>
 #include "TextGrid.h"
 #include "PhyloTreeView.h"
-
+#include "papara.h"
 
 class QPlainTextEdit;
 class QProgressDialog;
@@ -44,12 +44,15 @@ namespace Ui {
 
 namespace papara {
     class scoring_results;
+    class log_sink;
+    
 }
 
 
     
 class output_alignment_store;
 class papara_state;
+;
 
 Q_DECLARE_METATYPE(QSharedPointer<papara_state>)
 Q_DECLARE_METATYPE(QSharedPointer<papara::scoring_results> )
@@ -76,36 +79,55 @@ private:
     QScopedPointer<QThread> thread_;
 };
 
-
-
-class streambuf_to_q_plain_text_edit : public QObject, public std::streambuf
+class papara_log_sink_q_plain_text_edit : public QObject, public papara::log_sink
 {
 Q_OBJECT
 public:
-    explicit streambuf_to_q_plain_text_edit( QPlainTextEdit *qpte, std::size_t buff_sz = 80, std::size_t put_back = 8);
-
-
+    explicit papara_log_sink_q_plain_text_edit( QPlainTextEdit *qpte );
+    virtual void post( char overflow, char *start, char *end ) ;
 private:
 
-    void append( int of, char *first, char *last );
-    // overrides base class over()
-    int_type overflow(int c);
-
-    int sync();
-
+    
     // copy ctor and assignment not implemented;
     // copying not allowed
-    streambuf_to_q_plain_text_edit(const streambuf_to_q_plain_text_edit &);
-    streambuf_to_q_plain_text_edit &operator= (const streambuf_to_q_plain_text_edit &);
+    papara_log_sink_q_plain_text_edit(const papara_log_sink_q_plain_text_edit &);
+    papara_log_sink_q_plain_text_edit &operator= (const papara_log_sink_q_plain_text_edit &);
 
 
 Q_SIGNALS:
     void post_text( QString );
 private:
 
-    const std::size_t put_back_;
-    std::vector<char> buffer_;
 };
+
+// class streambuf_to_q_plain_text_edit : public QObject, public std::streambuf
+// {
+// Q_OBJECT
+// public:
+//     explicit streambuf_to_q_plain_text_edit( QPlainTextEdit *qpte, std::size_t buff_sz = 80, std::size_t put_back = 8);
+// 
+// 
+// private:
+// 
+//     void append( int of, char *first, char *last );
+//     // overrides base class over()
+//     int_type overflow(int c);
+// 
+//     int sync();
+// 
+//     // copy ctor and assignment not implemented;
+//     // copying not allowed
+//     streambuf_to_q_plain_text_edit(const streambuf_to_q_plain_text_edit &);
+//     streambuf_to_q_plain_text_edit &operator= (const streambuf_to_q_plain_text_edit &);
+// 
+// 
+// Q_SIGNALS:
+//     void post_text( QString );
+// private:
+// 
+//     const std::size_t put_back_;
+//     std::vector<char> buffer_;
+// };
 
 
 class state_worker : public QObject

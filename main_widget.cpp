@@ -39,65 +39,94 @@
 
 
 
-streambuf_to_q_plain_text_edit::streambuf_to_q_plain_text_edit( QPlainTextEdit *qpte, std::size_t buff_sz, std::size_t put_back )
-:
-  put_back_(std::max(put_back, size_t(1))),
-  buffer_(std::max(buff_sz, put_back_) + put_back_)
+// streambuf_to_q_plain_text_edit::streambuf_to_q_plain_text_edit( QPlainTextEdit *qpte, std::size_t buff_sz, std::size_t put_back )
+// :
+//   put_back_(std::max(put_back, size_t(1))),
+//   buffer_(std::max(buff_sz, put_back_) + put_back_)
+// {
+// 
+//     QObject::connect( this, SIGNAL(post_text(QString)), qpte, SLOT(insertPlainText(const QString &)), Qt::QueuedConnection );
+//     QObject::connect( this, SIGNAL(post_text(QString)), qpte, SLOT(centerCursor()), Qt::QueuedConnection );
+// }
+// 
+// 
+// 
+// void streambuf_to_q_plain_text_edit::append( int of, char *first, char *last ) {
+//     size_t size = std::distance(first, last);
+// 
+// //     std::cout << "append: " << char(of) << " " << std::distance(first,last) << "\n";
+//     
+//     assert( size < 100000 );
+//     QByteArray ba( first, size );
+// 
+//     QString s;
+//     s.append(ba);
+// 
+//     if( of > 0 ) {
+//         const char b[2] = {char(of), '\0'};
+//         s.append( b );
+//     }
+//     
+//     //qpte_->appendPlainText(s);
+//     emit post_text( s );
+// 
+// }
+// 
+// // overrides base class over()
+// streambuf_to_q_plain_text_edit::int_type streambuf_to_q_plain_text_edit::overflow(int c) {
+// 
+// 
+// 
+// 
+// //            std::cout << "overflow:";
+// //            std::copy( pbase(), epptr(), std::ostream_iterator<char>(std::cout));
+// //            std::cout << (char) c;
+// //            std::cout << std::endl;
+// 
+//     append( c, pbase(), epptr() );
+// 
+//     setp(&buffer_.front(), (&buffer_.back()) + 1);
+// 
+//     return 1;
+// }
+// 
+// int streambuf_to_q_plain_text_edit::sync() {
+// //            std::cout << "sync:";
+// //            std::copy( pbase(), pptr(), std::ostream_iterator<char>(std::cout));
+// //            std::cout << std::endl;
+// 
+//     append( 0, pbase(), pptr() );
+//     setp(&buffer_.front(), (&buffer_.back()) + 1);
+//     return 0;
+// }
+
+
+papara_log_sink_q_plain_text_edit::papara_log_sink_q_plain_text_edit( QPlainTextEdit *qpte )  
 {
 
     QObject::connect( this, SIGNAL(post_text(QString)), qpte, SLOT(insertPlainText(const QString &)), Qt::QueuedConnection );
     QObject::connect( this, SIGNAL(post_text(QString)), qpte, SLOT(centerCursor()), Qt::QueuedConnection );
 }
 
+void papara_log_sink_q_plain_text_edit::post ( char overflow, char* start, char* end )
+{
+    size_t size = std::distance ( start, end );
 
+    //     std::cout << "append: " << char(of) << " " << std::distance(first,last) << "\n";
 
-void streambuf_to_q_plain_text_edit::append( int of, char *first, char *last ) {
-    size_t size = std::distance(first, last);
-
-//     std::cout << "append: " << char(of) << " " << std::distance(first,last) << "\n";
-    
-    assert( size < 100000 );
-    QByteArray ba( first, size );
+    assert ( size < 100000 );
+    QByteArray ba ( start, size );
 
     QString s;
-    s.append(ba);
+    s.append ( ba );
 
-    if( of > 0 ) {
-        const char b[2] = {char(of), '\0'};
-        s.append( b );
+    if ( overflow > 0 ) {
+        const char b[2] = {char ( overflow ), '\0'};
+        s.append ( b );
     }
-    
+
     //qpte_->appendPlainText(s);
-    emit post_text( s );
-
-}
-
-// overrides base class over()
-streambuf_to_q_plain_text_edit::int_type streambuf_to_q_plain_text_edit::overflow(int c) {
-
-
-
-
-//            std::cout << "overflow:";
-//            std::copy( pbase(), epptr(), std::ostream_iterator<char>(std::cout));
-//            std::cout << (char) c;
-//            std::cout << std::endl;
-
-    append( c, pbase(), epptr() );
-
-    setp(&buffer_.front(), (&buffer_.back()) + 1);
-
-    return 1;
-}
-
-int streambuf_to_q_plain_text_edit::sync() {
-//            std::cout << "sync:";
-//            std::copy( pbase(), pptr(), std::ostream_iterator<char>(std::cout));
-//            std::cout << std::endl;
-
-    append( 0, pbase(), pptr() );
-    setp(&buffer_.front(), (&buffer_.back()) + 1);
-    return 0;
+    emit post_text ( s );
 }
 
 class output_alignment_store : public papara::output_alignment {
@@ -356,9 +385,11 @@ public:
     papara_state_impl( QPlainTextEdit *qpte_dont_use_me, const std::string &tree_name, const std::string &ref_name, const std::string &qs_name, const std::string &pg_blast, const std::string &pg_partitions )
         : sbq_(qpte_dont_use_me),
           log_file_( "contraption_log.txt"),
-          ost_( &sbq_ ),
-          ldev( ost_, log_file_ ),
-          lout_guard(  papara::lout, ldev ),
+          log_file_tee_(log_file_),
+          log_window_sink_(&sbq_),
+       //   ost_( &sbq_ ),
+          //ldev( ost_, log_file_ ),
+          //lout_guard(  papara::lout, ldev ),
           qs_(qs_name),
           refs_(tree_name.c_str(), ref_name.c_str(), &qs_ ),
           scoring_parameters_(papara::papara_score_parameters::default_scores())
@@ -472,15 +503,20 @@ public:
     
 private:
 
-    streambuf_to_q_plain_text_edit sbq_;
+    //streambuf_to_q_plain_text_edit sbq_;
 
+    papara_log_sink_q_plain_text_edit sbq_;
+    
     std::ofstream log_file_;
+    papara::add_log_tee log_file_tee_;
+    papara::add_log_sink log_window_sink_;
 
+//     std::ostream ost_;
+//     papara::log_device ldev;
+//     papara::log_stream_guard lout_guard;
 
-    std::ostream ost_;
-    papara::log_device ldev;
-    papara::log_stream_guard lout_guard;
-
+    
+    
     papara_state_impl();
     papara::queries<seq_tag> qs_;
     papara::references<pvec_pgap,seq_tag> refs_;
