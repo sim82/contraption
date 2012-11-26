@@ -22,7 +22,7 @@
 #include "blast_partassign.h"
 
 #include "PaparaMainWidget.h"
-#include "ui_main_widget.h"
+#include "ui_PaparaMainWidget.h"
 
 #include <QFileDialog>
 #include <QProgressDialog>
@@ -466,7 +466,7 @@ private:
     QScopedPointer<partassign::part_assignment> part_assignment_;
 };
 
-// converting from QString to const char* is ridiculusly complicated. so store string as when conversion is necessary std::string...
+// converting from QString to const char* is ridiculusly complicated. so store string as std::string when conversion is necessary 
 static std::string de_q_string( QString qs ) {
     std::string s = qs.toStdString();
 
