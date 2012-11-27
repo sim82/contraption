@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Form</string>
+   <string>VisualPaPaRa</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
    <item row="1" column="3">
@@ -217,11 +217,6 @@
           </widget>
          </item>
         </layout>
-        <zorder>pte_log</zorder>
-        <zorder>saQuery</zorder>
-        <zorder>saRef</zorder>
-        <zorder>pte_log_2</zorder>
-        <zorder>scrollArea_3</zorder>
        </widget>
       </item>
       <item row="0" column="1">

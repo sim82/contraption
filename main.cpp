@@ -34,6 +34,8 @@
 #include "PaparaMainWidget.h"
 #include "TextGrid.h"
 #include "FileSelector.h"
+#include "ivymike/aligned_buffer.h"
+#include "ivymike/thread.h"
 
 // class TestModel : public TextGridModel {
 // public:
@@ -144,6 +146,22 @@ int main( int argc, char *argv[] ) {
 
 }
 
+#if 0 
+class tx {	
+public:
+	void operator()() {
+		while(true) {
+			ivy_mike::aligned_buffer<char> v( (rand() % 10) * 128 );
+
+		}
+
+	}
+
+
+
+};
+#endif
+
 #ifdef WIN32
 int CALLBACK WinMain(
   __in  HINSTANCE hInstance,
@@ -153,6 +171,15 @@ int CALLBACK WinMain(
 )
 {
 	char *argv[1] = {"test"};
+
+#if 0
+	ivy_mike::thread_group tg;
+
+	for( size_t i = 0; i < 2; ++i ) {
+		tg.create_thread( tx() );
+	}
+	tg.join_all();
+#endif
 	return main( 1, argv );
 }
 #endif
@@ -232,10 +259,13 @@ LoadWizardPage::LoadWizardPage() : QWizardPage() {
     fsPartition->changeFilename("/home/sim/src_exelixis/papara_nt/test.model");
     
 #else
-    fsTree->changeFilename( "C:/2012_robert_454/RAxML_bestTree.cora_Sanger_reference_alignment.tre" );
+
+	if( QFile::exists("C:/2012_robert_454/RAxML_bestTree.cora_Sanger_reference_alignment.tre") ) {
+		fsTree->changeFilename( "C:/2012_robert_454/RAxML_bestTree.cora_Sanger_reference_alignment.tre" );
     
-    fsRef->changeFilename( "C:/2012_robert_454/cora_Sanger_reference_alignment.phy" );
-    fsQuery->changeFilename( "C:/2012_robert_454/cluster_52_72_cora_inversa_squamiformis_DIC_148_149.fas" );
+		fsRef->changeFilename( "C:/2012_robert_454/cora_Sanger_reference_alignment.phy" );
+		fsQuery->changeFilename( "C:/2012_robert_454/cluster_52_72_cora_inversa_squamiformis_DIC_148_149.fas" );
+	}
 #endif
     
     setLayout(layout);

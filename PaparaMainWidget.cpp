@@ -39,7 +39,11 @@
 
 
 
-
+#if 1
+Q_DECLARE_METATYPE(QSharedPointer<papara_state>)
+Q_DECLARE_METATYPE(QSharedPointer<papara::scoring_results> )
+Q_DECLARE_METATYPE(QSharedPointer<output_alignment_store> )
+#endif
 
 
 PaparaLogSink_QPlainTextEdit::PaparaLogSink_QPlainTextEdit( QPlainTextEdit *qpte )  
@@ -401,7 +405,7 @@ public:
         
         scoring_parameters_.print(std::cerr);
         papara::driver<pvec_pgap,seq_tag>::calc_scores(num_threads, refs_, qs_, res, scoring_parameters_ );
-        
+        //QMessageBox::critical(0, "return", "bla" );
         t1.add_int();
         t1.print( );//papara::lout );
         
@@ -414,7 +418,7 @@ public:
         QScopedPointer<output_alignment_store> oas(new output_alignment_store);
         
         //papara::papara_score_parameters sp = papara::papara_score_parameters::default_scores();
-        papara::lout << "aligning best scoring QS\n";
+        papara::lout << "aligning best scoring QS" << std::endl;
         scoring_parameters_.print(std::cerr);
         papara::driver<pvec_pgap,seq_tag>::align_best_scores_oa( oas.data(), qs_, refs_, res, size_t(0), ref_gaps, scoring_parameters_ );
  
@@ -586,7 +590,7 @@ PaparaMainWidget::~PaparaMainWidget()
     bg_thread_->quit();
     bg_thread_->wait( 1000 );
     if( !bg_thread_->isFinished() ) {
-        QMessageBox::critical(this, "Job Running", "A background job is still running. Need to do an unclean program exit, which might look like a crash..." );
+        QMessageBox::critical(this, "Job Running", "A background job is still running. The Program needs to perform unclean termination, which might look like a crash (e.g., core dump, show scary warning dialogs or cause the end of the world.) ..." );
         
         // give it one more chance in case it has shut down cleanly in the meantime
         if( !bg_thread_->isFinished() ) { 
@@ -628,8 +632,8 @@ void PaparaMainWidget::post_show_stuff() {
         on_pbLoad_clicked();
     } else {
         QMessageBox::critical(this, "Input Files not readable", "One or more of the input files are not readble.", QMessageBox::Abort );
-        
-        throw std::runtime_error( "bailing out\n" );
+		QApplication::exit();
+        //throw std::runtime_error( "bailing out\n" );
     }
 }
 
@@ -777,8 +781,8 @@ void PaparaMainWidget::on_state_ready(QSharedPointer< papara_state > state, QStr
     
     if( state.isNull() ) {
         QMessageBox::critical(this,"Internal Error", msg );
-               
-        abort();
+        QApplication::exit();     
+        //abort();
     }
     
     papara_ = state;
@@ -936,7 +940,7 @@ void PaparaMainWidget::on_scoring_done(QSharedPointer<output_alignment_store> oa
 
 
 
-    ui->pte_log->appendPlainText("scoring done");
+    ui->pte_log->appendPlainText("scoring done\n");
 	ui->pbRun->setPalette( QPalette() );
 
     ui->pbRun->setAutoFillBackground(false);

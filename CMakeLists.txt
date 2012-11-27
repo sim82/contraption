@@ -3,12 +3,11 @@ cmake_minimum_required(VERSION 2.8)
 
 project(papara_epa_gui_tools)
 
-INCLUDE(CPack)
 
-set( CPACK_PACKAGE_NAME visual_papara )
-set( CPACK_PACKAGE_VERSION 2.3 )
-set( CPACK_PACKAGE_CONTACT "simberger@gmail.com" )
-#set( CPACK_DEBIAN_PACKAGE_DEPENDS
+
+
+
+SET( PAPARA_NO_IVYMIKE TRUE CACHE BOOL "tell papara that ivy_mike is present in super-project" FORCE)
 
 
 add_subdirectory(ivy_mike)
@@ -37,14 +36,9 @@ ENDIF()
 include_directories(${IVYMIKE_INCLUDE} papara_nt papara_nt/ublasJama-1.0.2.3 )
 
 
-SET(CPACK_PACKAGE_DESCRIPTION_SUMMARY "VisualPaPaRa 2 GUI frontend")
-SET(CPACK_PACKAGE_VENDOR "Simon A. Berger")
-SET(CPACK_PACKAGE_DESCRIPTION_FILE "${CMAKE_CURRENT_SOURCE_DIR}/INSTALL")
-SET(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE")
-SET(CPACK_PACKAGE_VERSION_MAJOR "2")
-SET(CPACK_PACKAGE_VERSION_MINOR "3")
-SET(CPACK_PACKAGE_VERSION_PATCH "0")
-SET(CPACK_DEBIAN_PACKAGE_MAINTAINER "simberger@gmail.com")
+
+
+
 
  # with SET() command you can change variables or define new ones
   # here we define SAMPLE_SRCS variable that contains a list of all .cpp files
@@ -133,5 +127,38 @@ target_link_libraries(largali ${QT_LIBRARIES} ivymike ublas_jama )
 target_link_libraries(epa_viewer ${QT_LIBRARIES} ivymike ublas_jama )
 
 
-INSTALL_TARGETS( /bin visual_papara )
+INSTALL_TARGETS( /bin visual_papara epa_viewer largali )
 
+if(WIN32) 
+    INSTALL(FILES
+        "${QT_BINARY_DIR}/QtCore${QT_VERSION_MAJOR}.dll"
+#        "${QT_BINARY_DIR}/QtXml${QT_VERSION_MAJOR}.dll"
+#        "${QT_BINARY_DIR}/QtTest${QT_VERSION_MAJOR}.dll"
+#        "${QT_BINARY_DIR}/QtWebKit${QT_VERSION_MAJOR}.dll"
+        "${QT_BINARY_DIR}/QtGui${QT_VERSION_MAJOR}.dll"
+#        "${QT_BINARY_DIR}/QtNetwork${QT_VERSION_MAJOR}.dll"
+        "${QT_BINARY_DIR}/QtScript${QT_VERSION_MAJOR}.dll"
+        DESTINATION bin
+    )
+
+	set(CPACK_NSIS_MENU_LINKS "bin/visual_papara" "Visual PaPaRa"
+                          "bin/epa_viewer" "EPA jplace file viewer"
+                          "bin/largali" "Large PHYLIP file viewer"
+						  )
+endif()
+set( CPACK_PACKAGE_NAME visual_papara )
+set( CPACK_PACKAGE_VERSION 2.3 )
+set( CPACK_PACKAGE_CONTACT "simberger@gmail.com" )
+#set( CPACK_DEBIAN_PACKAGE_DEPENDS
+
+
+SET(CPACK_PACKAGE_DESCRIPTION_SUMMARY "VisualPaPaRa 2 GUI frontend")
+SET(CPACK_PACKAGE_VENDOR "Simon A. Berger")
+SET(CPACK_PACKAGE_DESCRIPTION_FILE "${CMAKE_CURRENT_SOURCE_DIR}/INSTALL")
+SET(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE")
+SET(CPACK_PACKAGE_VERSION_MAJOR "2")
+SET(CPACK_PACKAGE_VERSION_MINOR "3")
+SET(CPACK_PACKAGE_VERSION_PATCH "0")
+SET(CPACK_DEBIAN_PACKAGE_MAINTAINER "simberger@gmail.com")
+
+INCLUDE(CPack)

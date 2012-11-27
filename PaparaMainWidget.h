@@ -53,11 +53,11 @@ namespace papara {
 class output_alignment_store;
 class papara_state;
 
-
+#if 0
 Q_DECLARE_METATYPE(QSharedPointer<papara_state>)
 Q_DECLARE_METATYPE(QSharedPointer<papara::scoring_results> )
 Q_DECLARE_METATYPE(QSharedPointer<output_alignment_store> )
-
+#endif
 
 class qt_thread_guard {
 public:
