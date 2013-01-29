@@ -1,0 +1,7 @@
+example for building with cmake:
+
+mkdir build
+cd build
+cmake .. -DCMAKE_BUILD_TYPE=Release
+make
+cd ..
