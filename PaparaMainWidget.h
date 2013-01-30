@@ -29,9 +29,16 @@
 #include <string>
 #include <cassert>
 #include <deque>
+
 #include "TextGrid.h"
 #include "PhyloTreeView.h"
+
+
+// AAARGHH qt moc currently freaks out on parsing some of the boost headers
+#ifndef Q_MOC_RUN
 #include "papara.h"
+#endif
+
 
 class QPlainTextEdit;
 class QProgressDialog;
