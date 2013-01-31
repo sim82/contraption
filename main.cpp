@@ -250,14 +250,18 @@ LoadWizardPage::LoadWizardPage() : QWizardPage() {
 //     fsRef->changeFilename( "/space/projects/2012_robert_454/cora_Sanger_reference_alignment.phy" );
 //     fsQuery->changeFilename( "/space/projects/2012_robert_454/cluster_52_72_cora_inversa_squamiformis_DIC_148_149.fas" );
     
-    fsTree->changeFilename( "/home/sim/src_exelixis/papara_nt/test_1604/RAxML_bestTree.ref_orig" );
+	QString exampleDir = QDir::homePath() + "/visual_papara_test";
+	
+	if( QFile::exists( exampleDir + "/RAxML_bestTree.ref_orig" ) ) {
+	
+		fsTree->changeFilename( exampleDir + "/RAxML_bestTree.ref_orig" );
     
-    fsRef->changeFilename( "/home/sim/src_exelixis/papara_nt/test_1604/orig.phy.1" );
-    fsQuery->changeFilename( "/home/sim/src_exelixis/papara_nt/test_1604/qs.fa.200" );
+		fsRef->changeFilename( exampleDir + "/orig.phy.1" );
+		fsQuery->changeFilename( exampleDir + "/qs.fa.200" );
     
-    fsBlast->changeFilename("/home/sim/src_exelixis/papara_nt/test.blast");
-    fsPartition->changeFilename("/home/sim/src_exelixis/papara_nt/test.model");
-    
+		//fsBlast->changeFilename("/home/sim/src_exelixis/papara_nt/test.blast");
+		//fsPartition->changeFilename("/home/sim/src_exelixis/papara_nt/test.model");
+	}
 #else
 
 	if( QFile::exists("C:/2012_robert_454/RAxML_bestTree.cora_Sanger_reference_alignment.tre") ) {
