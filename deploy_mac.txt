@@ -1,0 +1,3 @@
+mkdir -p visual_papara.app/Contents/MacOS
+cp contraption/build_release/visual_papara visual_papara.app/Contents/MacOS/
+macdeployqt visual_papara.app -dmg
