@@ -14,6 +14,7 @@ add_subdirectory(ivy_mike)
 add_subdirectory(papara_nt)
 
 find_package(Qt4 4.4.3 REQUIRED QtCore QtGui QtScript )
+
 include(${QT_USE_FILE})
 
 
@@ -22,7 +23,6 @@ IF(NOT BOOST_ROOT)
 set(BOOST_ROOT C:\\src\\boost_1_47_0)
 ENDIF()
 
-include_directories( ${BOOST_ROOT} )
 
 include_directories( e:\\src\\boost_1_48_0)
 file(GLOB IM_HEADERS *.h)
@@ -33,10 +33,11 @@ SET(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -Wall -msse3")
 
 ENDIF()
 
-include_directories(${IVYMIKE_INCLUDE} papara_nt papara_nt/ublasJama-1.0.2.3 )
+include_directories(${IVYMIKE_INCLUDE}  papara_nt papara_nt/ublasJama-1.0.2.3 )
 
-
-
+if(BOOST_ROOT)
+  include_directories(${BOOST_ROOT})
+endif()
 
 
 

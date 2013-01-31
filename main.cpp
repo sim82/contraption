@@ -243,7 +243,7 @@ LoadWizardPage::LoadWizardPage() : QWizardPage() {
     
     layout->addWidget(laPartition, 6, 0 );
     layout->addWidget(fsPartition, 6, 1 );
-    
+
 #ifndef WIN32
 //     fsTree->changeFilename( "/space/projects/2012_robert_454/RAxML_bestTree.cora_Sanger_reference_alignment.tre" );
 //     
