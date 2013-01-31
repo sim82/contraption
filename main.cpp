@@ -28,6 +28,7 @@
 #include <QGridLayout>
 #include <QLineEdit>
 #include <QCheckBox>
+#include <QTimer>
 #include <iostream>
 #include "main.h"
 #include "papara_nt/papara.h"
@@ -88,7 +89,10 @@ private:
 
 int main( int argc, char *argv[] ) {
 
-
+#ifdef __APPLE__
+    QApplication::setGraphicsSystem("raster");
+#endif
+    
     QApplication a(argc, argv);
     
     QWizard wizard;
@@ -99,6 +103,12 @@ int main( int argc, char *argv[] ) {
     
     wizard.addPage(loadPage);
     wizard.setModal(true);
+    wizard.update();
+    
+#ifdef __APPLE__
+    // HACK: on osx the dialog is not drawn initilly with the raster renderer => manually call repaint
+    QTimer::singleShot( 500, &wizard, SLOT(repaint()));
+#endif
     int res = wizard.exec();
     
     if( res == 0 ) {
@@ -250,7 +260,8 @@ LoadWizardPage::LoadWizardPage() : QWizardPage() {
 //     fsRef->changeFilename( "/space/projects/2012_robert_454/cora_Sanger_reference_alignment.phy" );
 //     fsQuery->changeFilename( "/space/projects/2012_robert_454/cluster_52_72_cora_inversa_squamiformis_DIC_148_149.fas" );
     
-	QString exampleDir = QDir::homePath() + "/visual_papara_test";
+
+	QString exampleDir = QDir::homePath() + "/Downloads/visual_papara_test";
 	
 	if( QFile::exists( exampleDir + "/RAxML_bestTree.ref_orig" ) ) {
 	
