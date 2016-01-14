@@ -1,4 +1,4 @@
-# Maintainer: Simon Berger <simberger@gmail.com>
+# Maintainer: Paul Smith <abc@def.xyz>
 pkgname=visual_papara-git
 pkgver=20120529
 pkgrel=1
